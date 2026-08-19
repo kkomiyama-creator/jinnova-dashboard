@@ -78,13 +78,26 @@
   .qual-bar-track{flex:1;background:var(--slate);border-radius:4px;height:16px;overflow:hidden;}
   .qual-bar-fill{background:var(--blue);height:100%;border-radius:4px;min-width:2px;}
   .qual-bar-count{width:32px;text-align:right;font-weight:700;color:var(--text);flex-shrink:0;}
+  .target-group{margin-bottom:16px;}
+  .target-group:last-child{margin-bottom:0;}
+  .target-group-title{font-size:12.5px;font-weight:700;color:var(--navy);margin-bottom:6px;display:flex;align-items:center;gap:8px;}
+  .target-row{display:flex;align-items:center;gap:8px;margin-bottom:4px;font-size:12px;}
+  .target-label{width:80px;flex-shrink:0;color:var(--text-sub);}
+  .target-track{flex:1;background:var(--slate);border-radius:4px;height:14px;overflow:hidden;}
+  .target-fill{height:100%;border-radius:4px;min-width:2px;}
+  .target-fill.good{background:var(--good);}
+  .target-fill.mid{background:var(--mid);}
+  .target-fill.bad{background:var(--bad);}
+  .target-fill.none{background:var(--border);}
+  .target-count{width:110px;text-align:right;font-weight:700;color:var(--text);flex-shrink:0;font-size:11.5px;}
+  .target-count.unset{color:var(--text-xs);font-weight:400;}
 </style>
 </head>
 <body>
 <div class="wrap">
   <div class="header">
     <h1>JINNOVA様 専用ダッシュボード</h1>
-    <div class="sub">対象期間：<span id="periodLabel">2026-08-12 〜 2026-08-19（全期間・新運用ルール開始日〜本日）</span> ／ 更新：2026-08-19 20:12</div>
+    <div class="sub">対象期間：<span id="periodLabel">2026-08-12 〜 2026-08-19（全期間・新運用ルール開始日〜本日）</span> ／ 更新：2026-08-19 20:19</div>
   </div>
 
   <div class="periodbar">
@@ -128,9 +141,15 @@
   <div class="card">
     <h2>メンバー別実績<span style="font-weight:400;color:var(--text-xs);font-size:11px;"> — 列見出しクリックで並び替え、行クリックで日別内訳</span></h2>
     <table id="memberTable"></table>
-    <div class="note">※ 実績データなし（現在Cyzen上に活動記録が見当たりません）：倉住昇吾・後藤陽太・津崎涼・鎮守灯</div>
+    <div class="note">※ 実績データなし（現在Cyzen上に活動記録が見当たりません）：津崎涼・鎮守灯・倉住昇吾・後藤陽太</div>
     <div class="note"></div>
     <div class="note">※ 商談予定1件は参加者からアポインターを一意に判定できなかったため、メンバー別の集計から除外しています（合計の商談予定数にも含まれません）。</div>
+  </div>
+
+  <div class="card">
+    <h2>個人目標の達成状況<span style="font-weight:400;color:var(--text-xs);font-size:11px;"> — 月次目標を表示期間の日数で按分して比較</span></h2>
+    <div id="targetView"></div>
+    <div class="note">目標は月次で設定し、週次/日次/全期間の表示では日数按分（目標×期間日数÷30）した値と比較しています。「未設定」は目標が入力されていないメンバー・指標です。</div>
   </div>
 
   <div class="card">
@@ -192,6 +211,9 @@ const SCHEDULE_RECORDS = [["2026-08-13", "栗山裕仁", "kakutei"], ["2026-08-1
 const SCHEDULE_DETAIL = [["2026-08-13", "栗山裕仁", "栗山　鹿児島市", "確定", "鹿児島県霧島市国分湊876-8"], ["2026-08-14", "栗山裕仁", "栗山　霧島市", "確定", "鹿児島県霧島市国分下井1722-2"], ["2026-08-14", "栗山裕仁", "栗山　霧島市　新堀様", "確定", "鹿児島県霧島市隼人町住吉564-5"], ["2026-08-16", "栗山裕仁", "栗山　霧島市　堀之内様", "確定", "鹿児島県霧島市国分重久567-1"], ["2026-08-18", "長谷川拓耶", "大迫様", "確定", "鹿児島県霧島市国分新町1362-1"], ["2026-08-18", "栗山裕仁", "栗山　霧島市", "確定", "鹿児島県霧島市国分広瀬3丁目7-9"], ["2026-08-19", "栗山裕仁", "FF-SH-FS-20260815-31", "仮予定", "鹿児島県鹿児島市坂之上7丁目40-35"]]; // [日付, 氏名, タイトル, カテゴリ, 住所]（商談予定の内訳明細）
 const QUALITATIVE_RECORDS = []; // [日付, 氏名, 項目名, 回答]（アポ獲得報告の定性項目）
 const ALL_PERIOD_LABEL = "2026-08-12 〜 2026-08-19（全期間・新運用ルール開始日〜本日）";
+const START_DATE_JS = "2026-08-12";
+const TODAY_JS = "2026-08-19";
+const TARGETS = {"長谷川拓耶": {"visit": 0, "contacted": 0, "ap": 0, "shodan_yotei": 0, "contract": 0}, "中島将暢": {"visit": 0, "contacted": 0, "ap": 0, "shodan_yotei": 0, "contract": 0}, "栗山裕仁": {"visit": 0, "contacted": 0, "ap": 0, "shodan_yotei": 0, "contract": 0}, "角谷成映": {"visit": 0, "contacted": 0, "ap": 0, "shodan_yotei": 0, "contract": 0}, "我妻拓馬": {"visit": 0, "contacted": 0, "ap": 0, "shodan_yotei": 0, "contract": 0}, "大谷勇斗": {"visit": 0, "contacted": 0, "ap": 0, "shodan_yotei": 0, "contract": 0}, "倉住昇吾": {"visit": 0, "contacted": 0, "ap": 0, "shodan_yotei": 0, "contract": 0}, "落水田匡平": {"visit": 0, "contacted": 0, "ap": 0, "shodan_yotei": 0, "contract": 0}, "後藤陽太": {"visit": 0, "contacted": 0, "ap": 0, "shodan_yotei": 0, "contract": 0}, "鎮守灯": {"visit": 0, "contacted": 0, "ap": 0, "shodan_yotei": 0, "contract": 0}, "津崎涼": {"visit": 0, "contacted": 0, "ap": 0, "shodan_yotei": 0, "contract": 0}}; // {氏名: {visit,contacted,ap,shodan_yotei,contract}}（月次目標。0=未設定）
 const CONTACTED_BUCKETS = new Set(['taimen_ng','ap_maybe','ap']);
 
 function fmtN(n){ return n.toLocaleString('ja-JP'); }
@@ -292,6 +314,54 @@ function renderPeriod(spotRecords, reportRecords, historyRecords, scheduleRecord
   renderMemberTable(members);
   renderMap(spotDetail);
   renderQualitative(qualRecords);
+  renderTargets(members);
+}
+
+// ---------- 個人目標の達成状況（月次目標を表示期間の日数で按分） ----------
+const TARGET_LABELS = {visit:'訪問数', contacted:'対面数', ap:'アポ獲得数', shodan_yotei:'商談予定数', contract:'成約数'};
+
+function currentPeriodDays(){
+  if(currentPeriod === 'day'){ return 1; }
+  if(currentPeriod === 'week'){ return 7; }
+  if(currentPeriod === 'month'){
+    const v = document.getElementById('monthPicker').value;
+    if(!v) return 30;
+    const parts = v.split('-'); const y = parseInt(parts[0],10), m = parseInt(parts[1],10);
+    return new Date(y, m, 0).getDate();
+  }
+  // all: START_DATE_JS 〜 TODAY_JS の日数
+  const a = new Date(START_DATE_JS+'T00:00:00'), b = new Date(TODAY_JS+'T00:00:00');
+  return Math.max(1, Math.round((b-a)/86400000) + 1);
+}
+
+function renderTargets(members){
+  const el = document.getElementById('targetView');
+  const days = currentPeriodDays();
+  const factor = days/30;
+  const rows = members.slice().sort(function(a,b){return a.name.localeCompare(b.name,'ja');}).map(function(m){
+    const t = TARGETS[m.name] || {};
+    const hasAnyTarget = Object.keys(TARGET_LABELS).some(function(k){ return (t[k]||0) > 0; });
+    const metricRows = Object.keys(TARGET_LABELS).map(function(k){
+      const label = TARGET_LABELS[k];
+      const actual = m[k]||0;
+      const monthlyTarget = t[k]||0;
+      if(!monthlyTarget){
+        return '<div class="target-row"><div class="target-label">'+label+'</div>'+
+          '<div class="target-track"><div class="target-fill none" style="width:0%;"></div></div>'+
+          '<div class="target-count unset">未設定</div></div>';
+      }
+      const prorated = monthlyTarget*factor;
+      const pct = Math.min(100, Math.round(actual/prorated*100));
+      const cls = pct>=100?'good':(pct>=60?'mid':'bad');
+      return '<div class="target-row"><div class="target-label">'+label+'</div>'+
+        '<div class="target-track"><div class="target-fill '+cls+'" style="width:'+pct+'%;"></div></div>'+
+        '<div class="target-count">'+fmtN(actual)+' / '+fmtN(Math.round(prorated))+'（'+pct+'%）</div></div>';
+    }).join('');
+    return '<div class="target-group"><div class="target-group-title">'+escapeHtml(m.name)+
+      (hasAnyTarget?'':' <span style="font-weight:400;color:var(--text-xs);font-size:11px;">（目標未設定）</span>')+
+      '</div>'+metricRows+'</div>';
+  }).join('');
+  el.innerHTML = rows || '<div class="empty-row">この期間の実績データがありません</div>';
 }
 
 // ---------- 商圏マップ（Leaflet） ----------
