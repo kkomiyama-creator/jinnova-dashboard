@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>JINNOVA様 専用ダッシュボード</title>
+<style>
+  :root{
+    --navy:#001F5F; --blue:#1457DA; --blue-pale:#EAF1FB; --border:#E2E8F0; --slate:#F5F7FA;
+    --text:#1A1A1A; --text-sub:#5B6472; --text-xs:#94A3B8;
+    --good:#059669; --good-bg:#D1FAE5; --mid:#D97706; --mid-bg:#FEF3C7; --bad:#DC2626; --bad-bg:#FEE2E2;
+  }
+  *{box-sizing:border-box;}
+  body{font-family:'Yu Gothic',-apple-system,'Hiragino Sans',sans-serif;margin:0;background:#F5F7FA;color:var(--text);}
+  .wrap{max-width:1080px;margin:0 auto;padding:32px 24px 60px;}
+  .header{background:var(--navy);color:#fff;border-radius:12px;padding:28px 32px;margin-bottom:24px;}
+  .header h1{margin:0 0 6px;font-size:24px;}
+  .header .sub{font-size:13px;opacity:.85;}
+  .periodbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:24px;}
+  .periodbar .label{font-size:11.5px;color:var(--text-sub);font-weight:600;}
+  .period-switch{display:flex;gap:2px;background:var(--slate);border:1px solid var(--border);border-radius:999px;padding:3px;}
+  .period-btn{padding:6px 16px;font-size:12.5px;font-weight:700;color:var(--text-sub);background:transparent;border:none;border-radius:999px;cursor:pointer;font-family:inherit;transition:background .12s,color .12s;}
+  .period-btn:hover{color:var(--text);}
+  .period-btn.active{background:var(--blue);color:#fff;}
+  .day-picker{font-family:inherit;font-size:12.5px;padding:6px 10px;border-radius:999px;border:1px solid var(--border);background:#fff;color:var(--text);cursor:pointer;}
+  .kpis{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;margin-bottom:24px;}
+  @media (max-width:900px){ .kpis{grid-template-columns:repeat(3,1fr);} }
+  .kpi{background:#fff;border:1px solid var(--border);border-radius:10px;padding:16px;}
+  .kpi .l{font-size:11px;color:var(--text-sub);margin-bottom:6px;}
+  .kpi .v{font-size:26px;font-weight:800;color:var(--navy);}
+  .kpi .m{font-size:11px;color:var(--text-xs);margin-top:4px;}
+  .card{background:#fff;border:1px solid var(--border);border-radius:10px;padding:20px;margin-bottom:20px;}
+  .card h2{font-size:15px;margin:0 0 14px;color:var(--navy);}
+  table{width:100%;border-collapse:collapse;font-size:13px;}
+  th{text-align:left;padding:8px 10px;color:var(--text-sub);font-weight:600;border-bottom:2px solid var(--border);font-size:12px;}
+  td{padding:9px 10px;border-bottom:1px solid var(--border);}
+  .tr{text-align:right;}
+  .fw{font-weight:700;}
+  .rep-cell{display:flex;align-items:center;gap:10px;}
+  .avatar{width:26px;height:26px;border-radius:50%;background:var(--blue);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;}
+  .chipcell{background:var(--blue-pale);}
+  .chip{display:inline-block;padding:3px 10px;border-radius:20px;font-weight:700;font-size:12px;}
+  .chip.good{background:var(--good-bg);color:var(--good);}
+  .chip.mid{background:var(--mid-bg);color:var(--mid);}
+  .chip.bad{background:var(--bad-bg);color:var(--bad);}
+  .funnel{display:flex;align-items:flex-end;gap:16px;padding:10px 0;}
+  .fstep{text-align:center;flex:1;}
+  .fbar{border-radius:8px 8px 0 0;padding:10px 4px;color:#fff;font-weight:800;font-size:18px;}
+  .fname{font-size:12px;color:var(--text-sub);margin-top:6px;}
+  .note{font-size:11px;color:var(--text-xs);line-height:1.7;margin-top:8px;}
+  .warnbox{background:#FFF7ED;border:1px solid #FDBA74;border-radius:8px;padding:12px 16px;font-size:12px;color:#92400E;line-height:1.7;margin-bottom:20px;}
+  .footer{text-align:center;font-size:11px;color:var(--text-xs);margin-top:30px;}
+  .empty-row{text-align:center;color:var(--text-xs);padding:20px;}
+  .tile.clickable{cursor:pointer;transition:transform .15s,box-shadow .15s;}
+  .tile.clickable:hover{transform:translateY(-2px);box-shadow:0 4px 16px rgba(15,31,61,.13);}
+  thead th{cursor:pointer;user-select:none;white-space:nowrap;}
+  thead th .arrow{opacity:.35;font-size:10px;margin-left:3px;}
+  thead th.sorted .arrow{opacity:1;color:var(--blue);}
+  tbody tr.clickable-row{cursor:pointer;}
+  tbody tr.clickable-row:hover{background:var(--blue-pale);}
+  .clickable-name{color:var(--blue);text-decoration:underline dotted;text-underline-offset:2px;}
+  .modal-overlay{display:none;position:fixed;inset:0;background:rgba(15,23,42,.45);align-items:center;justify-content:center;z-index:100;padding:24px;}
+  .modal-overlay.show{display:flex;}
+  .modal-box{background:#fff;border-radius:12px;box-shadow:0 4px 20px rgba(15,31,61,.2);max-width:560px;width:100%;max-height:80vh;display:flex;flex-direction:column;overflow:hidden;}
+  .modal-header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 20px;border-bottom:1px solid var(--border);}
+  .modal-title{font-size:15px;font-weight:800;color:var(--navy);}
+  .modal-sub{font-size:11.5px;color:var(--text-sub);margin-top:2px;font-weight:400;}
+  .modal-close{border:none;background:none;font-size:16px;color:var(--text-sub);cursor:pointer;width:28px;height:28px;border-radius:8px;flex:none;}
+  .modal-close:hover{background:var(--blue-pale);color:var(--text);}
+  .modal-body{overflow:auto;padding:0;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header">
+    <h1>JINNOVA様 専用ダッシュボード</h1>
+    <div class="sub">対象期間：<span id="periodLabel">2026-08-12 〜 2026-08-19（全期間・新運用ルール開始日〜本日）</span> ／ 更新：2026-08-19 18:11</div>
+  </div>
+
+  <div class="periodbar">
+    <span class="label">表示期間</span>
+    <div class="period-switch">
+      <button class="period-btn active" data-period="all">全期間</button>
+      <button class="period-btn" data-period="month">月次</button>
+      <button class="period-btn" data-period="week">週次(月〜日)</button>
+      <button class="period-btn" data-period="day">日次</button>
+    </div>
+    <select class="day-picker" id="monthPicker" style="display:none;"></select>
+    <select class="day-picker" id="weekPicker" style="display:none;"></select>
+    <select class="day-picker" id="dayPicker" style="display:none;"></select>
+  </div>
+
+  <div class="warnbox">
+    ⚠️ このダッシュボードは<b>2026-08-12にJINNOVA様へお願いした新しい入力ルール</b>（PPTX資料の集計ルールに準拠）で集計しています。それより前の実績は含まれません。<b>訪問数は「訪問（アポインター）」の打刻数そのもの</b>（スポット作成数ではありません）、<b>アポ獲得数は一旦「アポ後確依頼」の打刻数のみ</b>で計算しています（アポ獲得報告書の提出数は含めていません）。対面数（スポットタグ基準）の方が訪問数（打刻基準）より多く出る場合、それは「対面はしたが訪問（アポインター）を押していない」打刻漏れを意味します。率が「—」の場合は分母が0件です。
+  </div>
+
+  <div class="kpis">
+    <div class="kpi tile clickable" data-tile="visit"><div class="l">訪問数</div><div class="v" id="tileVisit">0</div><div class="m" id="tileVisitSub">7名の合算</div></div>
+    <div class="kpi tile clickable" data-tile="contacted"><div class="l">対面数</div><div class="v" id="tileContacted">8</div><div class="m" id="tileContactedSub">対面率 —</div></div>
+    <div class="kpi tile clickable" data-tile="ap"><div class="l">アポ獲得数</div><div class="v" id="tileAp">9</div><div class="m" id="tileApSub">アポ率 112.5%</div></div>
+    <div class="kpi tile clickable" data-tile="shodan_yotei"><div class="l">商談予定数</div><div class="v" id="tileYotei">7</div><div class="m" id="tileYoteiSub">商談化率 77.8%</div></div>
+    <div class="kpi tile clickable" data-tile="contract"><div class="l">成約数</div><div class="v" id="tileContract">8</div><div class="m">クローザー報告書ベース</div></div>
+    <div class="kpi tile clickable" data-tile="lost"><div class="l">敗戦数</div><div class="v" id="tileLost">0</div><div class="m" id="tileLostSub">提案中 0件</div></div>
+  </div>
+
+  <div class="card">
+    <h2>訪問ファネル</h2>
+    <div class="funnel">
+      <div class="fstep"><div class="fbar" style="background:#1A56DB;" id="fbVisit">0</div><div class="fname">訪問</div></div>
+      <div class="fstep"><div class="fbar" style="background:#1D4ED8;" id="fbContacted">8</div><div class="fname">対面</div></div>
+      <div class="fstep"><div class="fbar" style="background:#2563EB;" id="fbAp">9</div><div class="fname">アポ獲得</div></div>
+      <div class="fstep"><div class="fbar" style="background:#7C3AED;" id="fbYotei">7</div><div class="fname">商談予定</div></div>
+      <div class="fstep"><div class="fbar" style="background:#059669;" id="fbContract">8</div><div class="fname">成約</div></div>
+    </div>
+    <div class="note" id="funnelNote">対面率（対面/訪問）＝—　／　アポ率（アポ/対面）＝112.5%　／　アポ率（アポ/訪問）＝—　／　商談化率（商談予定/アポ）＝77.8%</div>
+  </div>
+
+  <div class="card">
+    <h2>メンバー別実績<span style="font-weight:400;color:var(--text-xs);font-size:11px;"> — 列見出しクリックで並び替え、行クリックで日別内訳</span></h2>
+    <table id="memberTable"></table>
+    <div class="note">※ 実績データなし（現在Cyzen上に活動記録が見当たりません）：津崎涼・鎮守灯・後藤陽太・倉住昇吾</div>
+    <div class="note"></div>
+    <div class="note">※ 商談予定1件は参加者からアポインターを一意に判定できなかったため、メンバー別の集計から除外しています（合計の商談予定数にも含まれません）。</div>
+  </div>
+
+  <div class="card">
+    <h2>データについて（集計ルール）</h2>
+    <div class="note">
+      ・出典：Cyzen連携API（GET /histories・GET /spots・GET /reports）をuser_id基準で直接集計。手動エクスポートXLSXは使用していません<br>
+      ・<b>訪問数</b>＝「訪問（アポインター）」ステータスの打刻数（GET /histories。スポット作成数ではありません）<br>
+      ・<b>対面数</b>＝タグ「対面お断り」「宅入」「AP見込み」「AP獲得」のいずれか（PPTX資料の定義に準拠。契約済み・敗戦等まで進んだスポットは含みません）<br>
+      ・<b>アポ獲得数</b>＝一旦「アポ後確依頼」ステータスの打刻数のみ（アポ獲得報告書の提出数は含めていません）<br>
+      ・<b>成約数／敗戦数／提案中</b>＝クローザーの「訪問結果」報告書（獲得／敗戦／提案中）の提出数<br>
+      ・<b>商談予定数</b>＝Cyzen上に登録された「予定」（カテゴリ「確定」「仮予定」「後確後（事務確認OK）」のみ、「休み」「キャンセル」は含みません）。予定の日付は開催予定日（start_date）基準です<br>
+      ・商談予定のアポインター判定：Cyzen APIには予定の作成者フィールドが無いため、参加者からクローザー（その予定に紐づく報告書の提出者）を除いた残り1名をアポインターとみなしています。参加者が1名のみ（自アポ）の場合はその人。判定できない予定はメンバー別集計から除外しています（除外件数は上の注記を参照）<br>
+      ・GET /histories はstatus_idによるサーバー側フィルタが大量データで不安定になる実装上の問題があるため、JINNOVA各メンバーをuser_id単位で個別に取得しています（この方式は実測で安定動作を確認済み）<br>
+      ・対象期間は<b>2026-08-12以降</b>のみです。これはPPTX資料に基づく新しい入力ルールの運用開始日、かつCyzen連携APIの報告書取得エンドポイントが遡れる限界（実測で直近8〜9日分まで）とほぼ一致するため、集計ルールが期間内で混在しないようこの日以降に統一しています<br>
+      ・報告書データは取得できる範囲を毎回キャッシュへ蓄積しているため、これ以降は運用を続ける限り正確な履歴が積み上がっていきます<br>
+      ・このページには<b>JINNOVA様に所属するメンバーのデータのみ</b>が含まれています（Cyzen側「会社名」タグで判定）。他パートナー・全社データは含まれません<br>
+      ・数値の定義について質問があれば、パートナー推進課 小宮山までご連絡ください
+    </div>
+  </div>
+
+  <div class="footer">© 2026 Fit Founder. パートナー推進課</div>
+</div>
+
+<div class="modal-overlay" id="drillModal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title" id="drillTitle"></div>
+        <div class="modal-sub" id="drillSub"></div>
+      </div>
+      <button class="modal-close" id="drillClose" aria-label="閉じる">✕</button>
+    </div>
+    <div class="modal-body" id="drillBody"></div>
+  </div>
+</div>
+
+<script>
+const SPOT_RECORDS = [["2026-08-14", "中島将暢", "contract"], ["2026-08-15", "長谷川拓耶", "ap"], ["2026-08-15", "我妻拓馬", "absent"], ["2026-08-15", "我妻拓馬", "taimen_ng"], ["2026-08-15", "我妻拓馬", "taimen_ng"], ["2026-08-15", "我妻拓馬", "absent"], ["2026-08-15", "角谷成映", "ap"], ["2026-08-15", "栗山裕仁", "absent"], ["2026-08-15", "栗山裕仁", "absent"], ["2026-08-16", "角谷成映", "ap"], ["2026-08-16", "大谷勇斗", "ap"], ["2026-08-16", "我妻拓馬", "ap"], ["2026-08-16", "長谷川拓耶", "ap"]]; // [日付, 氏名, バケット]（対面の元データ）
+const REPORT_RECORDS = [["2026-08-13", "栗山裕仁", "seiyaku"], ["2026-08-13", "栗山裕仁", "seiyaku"], ["2026-08-14", "中島将暢", "seiyaku"], ["2026-08-14", "栗山裕仁", "seiyaku"], ["2026-08-14", "栗山裕仁", "seiyaku"], ["2026-08-16", "栗山裕仁", "seiyaku"], ["2026-08-18", "栗山裕仁", "seiyaku"], ["2026-08-18", "栗山裕仁", "seiyaku"]]; // [日付, 氏名, 種別]（アポ獲得報告・成約・敗戦・提案中の元データ）
+const HISTORY_RECORDS = [["2026-08-15", "角谷成映", "atokaku_punch"], ["2026-08-15", "栗山裕仁", "atokaku_punch"], ["2026-08-15", "栗山裕仁", "atokaku_punch"], ["2026-08-15", "長谷川拓耶", "atokaku_punch"], ["2026-08-16", "大谷勇斗", "atokaku_punch"], ["2026-08-16", "我妻拓馬", "atokaku_punch"], ["2026-08-16", "角谷成映", "atokaku_punch"], ["2026-08-16", "長谷川拓耶", "atokaku_punch"], ["2026-08-19", "落水田匡平", "atokaku_punch"]]; // [日付, 氏名, 種別]（訪問・アポ後確依頼の打刻の元データ）
+const SPOT_DETAIL = [["2026-08-15", "長谷川拓耶", "FF-SH-FS-20260815-560", "AP獲得(お客様名記載)", "鹿児島県霧島市国分新町1362-1"], ["2026-08-15", "我妻拓馬", "FF-SH-FS-20260815-350", "対面お断り(理由記載)", "愛知県西尾市一色町味浜上乾地4-4"], ["2026-08-15", "我妻拓馬", "FF-SH-FS-20260815-347", "対面お断り(理由記載)", "愛知県西尾市一色町味浜上乾地4-4"], ["2026-08-15", "角谷成映", "釘田様", "AP獲得(お客様名記載)", "鹿児島県霧島市隼人町住吉71"], ["2026-08-16", "角谷成映", "永山様", "AP獲得(お客様名記載)", "鹿児島県霧島市国分清水1丁目4-9-5"], ["2026-08-16", "大谷勇斗", "山本様 Qセルズ", "AP獲得(お客様名記載)", "愛知県岡崎市中島東町3丁目1-20"], ["2026-08-16", "我妻拓馬", "FF-SH-FS-20260816-258", "AP獲得(お客様名記載)", "愛知県岡崎市中島東町3丁目8-2"], ["2026-08-16", "長谷川拓耶", "FF-SH-FS-20260816-43", "AP獲得(お客様名記載)", "鹿児島県姶良市加治木町反土2895-3"]]; // [日付, 氏名, スポット名, タグ, 住所]（対面数の内訳明細）
+const HISTORY_DETAIL = [["2026-08-15", "角谷成映", "atokaku_punch", "05:27", "鹿児島県霧島市隼人町住吉"], ["2026-08-15", "栗山裕仁", "atokaku_punch", "02:27", "鹿児島県鹿児島市下福元町"], ["2026-08-15", "栗山裕仁", "atokaku_punch", "01:18", "鹿児島県鹿児島市坂之上七丁目"], ["2026-08-15", "長谷川拓耶", "atokaku_punch", "10:03", "鹿児島県霧島市国分新町"], ["2026-08-16", "大谷勇斗", "atokaku_punch", "08:13", "愛知県岡崎市中島東町三丁目"], ["2026-08-16", "我妻拓馬", "atokaku_punch", "07:34", "愛知県岡崎市中島東町三丁目"], ["2026-08-16", "角谷成映", "atokaku_punch", "09:47", "鹿児島県霧島市国分新町"], ["2026-08-16", "長谷川拓耶", "atokaku_punch", "00:39", "鹿児島県姶良市加治木町反土"], ["2026-08-19", "落水田匡平", "atokaku_punch", "05:15", "鹿児島県鹿児島市若葉町"]]; // [日付, 氏名, 種別, 時刻, 住所]（訪問数の内訳明細）
+const SCHEDULE_RECORDS = [["2026-08-13", "栗山裕仁", "kakutei"], ["2026-08-14", "栗山裕仁", "kakutei"], ["2026-08-14", "栗山裕仁", "kakutei"], ["2026-08-16", "栗山裕仁", "kakutei"], ["2026-08-18", "長谷川拓耶", "kakutei"], ["2026-08-18", "栗山裕仁", "kakutei"], ["2026-08-19", "栗山裕仁", "kari"]]; // [日付, 氏名(アポインター), カテゴリ種別]（商談予定の元データ）
+const SCHEDULE_DETAIL = [["2026-08-13", "栗山裕仁", "栗山　鹿児島市", "確定", "鹿児島県霧島市国分湊876-8"], ["2026-08-14", "栗山裕仁", "栗山　霧島市", "確定", "鹿児島県霧島市国分下井1722-2"], ["2026-08-14", "栗山裕仁", "栗山　霧島市　新堀様", "確定", "鹿児島県霧島市隼人町住吉564-5"], ["2026-08-16", "栗山裕仁", "栗山　霧島市　堀之内様", "確定", "鹿児島県霧島市国分重久567-1"], ["2026-08-18", "長谷川拓耶", "大迫様", "確定", "鹿児島県霧島市国分新町1362-1"], ["2026-08-18", "栗山裕仁", "栗山　霧島市", "確定", "鹿児島県霧島市国分広瀬3丁目7-9"], ["2026-08-19", "栗山裕仁", "FF-SH-FS-20260815-31", "仮予定", "鹿児島県鹿児島市坂之上7丁目40-35"]]; // [日付, 氏名, タイトル, カテゴリ, 住所]（商談予定の内訳明細）
+const ALL_PERIOD_LABEL = "2026-08-12 〜 2026-08-19（全期間・新運用ルール開始日〜本日）";
+const CONTACTED_BUCKETS = new Set(['taimen_ng','ap_maybe','ap']);
+
+function fmtN(n){ return n.toLocaleString('ja-JP'); }
+function round1(x){ return Math.round(x*10)/10; }
+function fmtPct(v){ return v===null ? '—' : v+'%'; }
+function pctOrNull(num, den){ return den ? round1(num/den*100) : null; }
+function rateClass(v,good,warn){ if(v===null) return 'mid'; return v>=good?'good':(v>=warn?'mid':'bad'); }
+
+// spotカウント(bucket別)・reportカウント(kind別)・historyカウント(kind別)・scheduleカウント(kind別)から派生指標を計算
+function deriveFromCounts(sc, rc, hc, ssc){
+  sc = sc || {}; rc = rc || {}; hc = hc || {}; ssc = ssc || {};
+  const visit = hc.visit_punch||0;
+  let contacted=0; CONTACTED_BUCKETS.forEach(function(b){ if(sc[b]) contacted+=sc[b]; });
+  const ap=hc.atokaku_punch||0, contract=rc.seiyaku||0, lost=rc.haisen||0, proposal=rc.teianchu||0; // アポ獲得数は一旦「アポ後確依頼」打刻数のみ
+  const shodan_yotei = Object.values(ssc).reduce(function(a,b){return a+b;},0);
+  return {visit:visit, contacted:contacted, ap:ap, contract:contract, lost:lost, proposal:proposal, shodan_yotei:shodan_yotei,
+    taimen_rate: pctOrNull(contacted, visit),
+    ap_rate_taimen: pctOrNull(ap, contacted),
+    ap_rate_visit: pctOrNull(ap, visit),
+    yotei_rate_ap: pctOrNull(shodan_yotei, ap)};
+}
+
+function aggregateRecords(spotRecords, reportRecords, historyRecords, scheduleRecords){
+  const spotByName = {}, reportByName = {}, historyByName = {}, scheduleByName = {}, names = new Set();
+  for(let i=0;i<spotRecords.length;i++){
+    const name = spotRecords[i][1], bucket = spotRecords[i][2];
+    names.add(name);
+    if(!spotByName[name]) spotByName[name] = {};
+    spotByName[name][bucket] = (spotByName[name][bucket]||0)+1;
+  }
+  for(let i=0;i<reportRecords.length;i++){
+    const name = reportRecords[i][1], kind = reportRecords[i][2];
+    names.add(name);
+    if(!reportByName[name]) reportByName[name] = {};
+    reportByName[name][kind] = (reportByName[name][kind]||0)+1;
+  }
+  for(let i=0;i<historyRecords.length;i++){
+    const name = historyRecords[i][1], kind = historyRecords[i][2];
+    names.add(name);
+    if(!historyByName[name]) historyByName[name] = {};
+    historyByName[name][kind] = (historyByName[name][kind]||0)+1;
+  }
+  for(let i=0;i<scheduleRecords.length;i++){
+    const name = scheduleRecords[i][1], kind = scheduleRecords[i][2];
+    names.add(name);
+    if(!scheduleByName[name]) scheduleByName[name] = {};
+    scheduleByName[name][kind] = (scheduleByName[name][kind]||0)+1;
+  }
+  return Array.from(names).map(function(name){
+    const d = deriveFromCounts(spotByName[name], reportByName[name], historyByName[name], scheduleByName[name]); d.name=name; return d;
+  });
+}
+
+let currentSpotDetail = [];
+let currentHistoryDetail = [];
+let currentScheduleDetail = [];
+
+function renderPeriod(spotRecords, reportRecords, historyRecords, scheduleRecords, spotDetail, historyDetail, scheduleDetail, label){
+  currentSpotDetail = spotDetail;
+  currentHistoryDetail = historyDetail;
+  currentScheduleDetail = scheduleDetail;
+  const members = aggregateRecords(spotRecords, reportRecords, historyRecords, scheduleRecords).sort(function(a,b){ return b.visit-a.visit; });
+  const visit = members.reduce(function(s,m){return s+m.visit;},0);
+  const contacted = members.reduce(function(s,m){return s+m.contacted;},0);
+  const ap = members.reduce(function(s,m){return s+m.ap;},0);
+  const contract = members.reduce(function(s,m){return s+m.contract;},0);
+  const lost = members.reduce(function(s,m){return s+m.lost;},0);
+  const proposal = members.reduce(function(s,m){return s+m.proposal;},0);
+  const shodanYotei = members.reduce(function(s,m){return s+m.shodan_yotei;},0);
+  const taimenRate = pctOrNull(contacted, visit);
+  const apRateT = pctOrNull(ap, contacted);
+  const apRateV = pctOrNull(ap, visit);
+  const yoteiRateAp = pctOrNull(shodanYotei, ap);
+
+  document.getElementById('periodLabel').textContent = label;
+  document.getElementById('tileVisit').textContent = fmtN(visit);
+  document.getElementById('tileVisitSub').textContent = members.length+'名の合算';
+  document.getElementById('tileContacted').textContent = fmtN(contacted);
+  document.getElementById('tileContactedSub').textContent = '対面率 '+fmtPct(taimenRate);
+  document.getElementById('tileAp').textContent = fmtN(ap);
+  document.getElementById('tileApSub').textContent = 'アポ率 '+fmtPct(apRateT);
+  document.getElementById('tileYotei').textContent = fmtN(shodanYotei);
+  document.getElementById('tileYoteiSub').textContent = '商談化率 '+fmtPct(yoteiRateAp);
+  document.getElementById('tileContract').textContent = fmtN(contract);
+  document.getElementById('tileLost').textContent = fmtN(lost);
+  document.getElementById('tileLostSub').textContent = '提案中 '+proposal+'件';
+
+  document.getElementById('fbVisit').textContent = fmtN(visit);
+  document.getElementById('fbContacted').textContent = fmtN(contacted);
+  document.getElementById('fbAp').textContent = fmtN(ap);
+  document.getElementById('fbYotei').textContent = fmtN(shodanYotei);
+  document.getElementById('fbContract').textContent = fmtN(contract);
+  document.getElementById('funnelNote').textContent =
+    '対面率（対面/訪問）＝'+fmtPct(taimenRate)+'　／　アポ率（アポ/対面）＝'+fmtPct(apRateT)+'　／　アポ率（アポ/訪問）＝'+fmtPct(apRateV)+'　／　商談化率（商談予定/アポ）＝'+fmtPct(yoteiRateAp);
+
+  currentMembers = members;
+  currentPeriodLabel = label;
+  renderMemberTable(members);
+}
+
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g, function(c){
+    return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+  });
+}
+
+let currentMembers = [];
+let currentPeriodLabel = '';
+
+const MEMBER_COLS = [
+  {label:'メンバー', key:'name'},
+  {label:'訪問', key:'visit', num:true},
+  {label:'対面', key:'contacted', num:true},
+  {label:'アポ獲得', key:'ap', num:true},
+  {label:'対面率', key:'taimen_rate', num:true},
+  {label:'アポ率', key:'ap_rate_taimen', num:true},
+];
+let memberSortCol = 1;
+let memberSortDir = -1;
+
+function renderMemberTable(members){
+  const table = document.getElementById('memberTable');
+  const sorted = members.slice().sort(function(a,b){
+    const key = MEMBER_COLS[memberSortCol].key;
+    let av=a[key], bv=b[key];
+    if(av===null) av=-1; if(bv===null) bv=-1;
+    if(typeof av === 'number' && typeof bv === 'number') return (av-bv)*memberSortDir;
+    return String(av).localeCompare(String(bv),'ja')*memberSortDir;
+  });
+  const thead = '<thead><tr>' + MEMBER_COLS.map(function(c,i){
+    return '<th class="'+(c.num?'tr ':'')+(i===memberSortCol?'sorted':'')+'" data-i="'+i+'">'+c.label+
+      ' <span class="arrow">'+(i===memberSortCol?(memberSortDir>0?'▲':'▼'):'▲▼')+'</span></th>';
+  }).join('') + '</tr></thead>';
+  const tbody = sorted.length ? ('<tbody>' + sorted.map(function(m){
+    return '<tr class="clickable-row" data-name="'+escapeHtml(m.name)+'">'+
+      '<td><div class="rep-cell"><div class="avatar">'+m.name[0]+'</div><span class="clickable-name">'+escapeHtml(m.name)+'</span></div></td>'+
+      '<td class="tr">'+fmtN(m.visit)+'</td>'+
+      '<td class="tr">'+fmtN(m.contacted)+'</td>'+
+      '<td class="tr fw">'+fmtN(m.ap)+'</td>'+
+      '<td class="tr chipcell"><span class="chip '+rateClass(m.taimen_rate,30,15)+'">'+fmtPct(m.taimen_rate)+'</span></td>'+
+      '<td class="tr chipcell"><span class="chip '+rateClass(m.ap_rate_taimen,10,3)+'">'+fmtPct(m.ap_rate_taimen)+'</span></td></tr>';
+  }).join('') + '</tbody>') : '<tbody><tr><td colspan="6" class="empty-row">この期間の実績データがありません</td></tr></tbody>';
+  table.innerHTML = thead + tbody;
+
+  table.querySelectorAll('thead th').forEach(function(th){
+    th.addEventListener('click', function(){
+      const i = parseInt(th.dataset.i);
+      if(i===memberSortCol) memberSortDir *= -1; else { memberSortCol=i; memberSortDir=-1; }
+      renderMemberTable(members);
+    });
+  });
+  table.querySelectorAll('tbody tr.clickable-row').forEach(function(tr){
+    tr.addEventListener('click', function(){ openPersonDetail(tr.dataset.name); });
+  });
+}
+
+function buildTable(cols, rows, emptyMsg){
+  const thead = '<thead><tr>' + cols.map(function(c,i){ return '<th class="'+(i===0?'':'tr')+'">'+c+'</th>'; }).join('') + '</tr></thead>';
+  const tbody = rows.length ? ('<tbody>' + rows.map(function(r){
+    return '<tr>' + r.map(function(v,i){ return '<td class="'+(i===0?'':'tr')+'">'+v+'</td>'; }).join('') + '</tr>';
+  }).join('') + '</tbody>') : ('<tbody><tr><td colspan="'+cols.length+'" class="empty-row">'+emptyMsg+'</td></tr></tbody>');
+  return '<table style="margin-bottom:4px;">' + thead + tbody + '</table>';
+}
+function sectionTitle(t){
+  return '<div style="font-weight:700;font-size:12.5px;color:var(--navy);padding:14px 20px 6px;">'+t+'</div>';
+}
+
+// ---------- メンバー名クリック → 日別内訳＋対面スポット一覧＋訪問打刻一覧（常に全期間） ----------
+function openPersonDetail(name){
+  const spotByDate = {}, reportByDate = {}, historyByDate = {}, scheduleByDate = {}, dateSet = new Set();
+  SPOT_RECORDS.filter(function(r){return r[1]===name;}).forEach(function(r){
+    const date=r[0], bucket=r[2]; dateSet.add(date);
+    if(!spotByDate[date]) spotByDate[date] = {};
+    spotByDate[date][bucket] = (spotByDate[date][bucket]||0)+1;
+  });
+  REPORT_RECORDS.filter(function(r){return r[1]===name;}).forEach(function(r){
+    const date=r[0], kind=r[2]; dateSet.add(date);
+    if(!reportByDate[date]) reportByDate[date] = {};
+    reportByDate[date][kind] = (reportByDate[date][kind]||0)+1;
+  });
+  HISTORY_RECORDS.filter(function(r){return r[1]===name;}).forEach(function(r){
+    const date=r[0], kind=r[2]; dateSet.add(date);
+    if(!historyByDate[date]) historyByDate[date] = {};
+    historyByDate[date][kind] = (historyByDate[date][kind]||0)+1;
+  });
+  SCHEDULE_RECORDS.filter(function(r){return r[1]===name;}).forEach(function(r){
+    const date=r[0], kind=r[2]; dateSet.add(date);
+    if(!scheduleByDate[date]) scheduleByDate[date] = {};
+    scheduleByDate[date][kind] = (scheduleByDate[date][kind]||0)+1;
+  });
+  const dates = Array.from(dateSet).sort();
+  const daily = dates.map(function(d){ const dd = deriveFromCounts(spotByDate[d], reportByDate[d], historyByDate[d], scheduleByDate[d]); dd.date=d; return dd; });
+  const totalVisit = daily.reduce(function(s,d){return s+d.visit;},0);
+  const totalAp = daily.reduce(function(s,d){return s+d.ap;},0);
+  const totalContract = daily.reduce(function(s,d){return s+d.contract;},0);
+
+  document.getElementById('drillTitle').textContent = name;
+  document.getElementById('drillSub').textContent =
+    (dates[0]||'—')+' 〜 '+(dates[dates.length-1]||'—')+' 日別実績（全期間・累計: 訪問'+totalVisit+'件・アポ獲得'+totalAp+'件・成約'+totalContract+'件）';
+
+  const dailyRows = daily.slice().reverse().map(function(d){
+    return [d.date, fmtN(d.visit), fmtN(d.contacted), fmtN(d.ap), fmtN(d.shodan_yotei), fmtN(d.contract)];
+  });
+  const spotRows = SPOT_DETAIL.filter(function(r){return r[1]===name;}).slice().reverse().map(function(r){
+    return [r[0], escapeHtml(r[2]), escapeHtml(r[3]), escapeHtml(r[4])];
+  });
+  const histRows = HISTORY_DETAIL.filter(function(r){return r[1]===name && r[2]==='visit_punch';}).slice().reverse().map(function(r){
+    return [r[0], r[3]||'—', escapeHtml(r[4])];
+  });
+  const atokakuRows = HISTORY_DETAIL.filter(function(r){return r[1]===name && r[2]==='atokaku_punch';}).slice().reverse().map(function(r){
+    return [r[0], r[3]||'—', escapeHtml(r[4])];
+  });
+  const scheduleRows = SCHEDULE_DETAIL.filter(function(r){return r[1]===name;}).slice().reverse().map(function(r){
+    return [r[0], escapeHtml(r[2]), escapeHtml(r[3]), escapeHtml(r[4])];
+  });
+
+  document.getElementById('drillBody').innerHTML =
+    sectionTitle('日別実績') + buildTable(['日付','訪問','対面','アポ獲得','商談予定','成約'], dailyRows, 'データがありません') +
+    sectionTitle('対面したスポット一覧（'+spotRows.length+'件・対面数の内訳）') +
+    buildTable(['日付','スポット名','タグ','住所'], spotRows, '対面したスポットがありません') +
+    sectionTitle('「訪問（アポインター）」打刻一覧（'+histRows.length+'件・訪問数の内訳）') +
+    buildTable(['日付','時刻','打刻時の住所'], histRows, '打刻がありません') +
+    sectionTitle('「アポ後確依頼」打刻一覧（'+atokakuRows.length+'件・アポ獲得数の内訳）') +
+    buildTable(['日付','時刻','打刻時の住所'], atokakuRows, '打刻がありません') +
+    sectionTitle('商談予定一覧（'+scheduleRows.length+'件・商談予定数の内訳）') +
+    buildTable(['日付','タイトル','カテゴリ','住所'], scheduleRows, '商談予定がありません');
+  document.getElementById('drillModal').classList.add('show');
+}
+
+// ---------- KPIタイルクリック → 内訳モーダル（現在の表示期間） ----------
+const TILE_LABELS = {visit:'訪問数', contacted:'対面数', ap:'アポ獲得数', shodan_yotei:'商談予定数', contract:'成約数', lost:'敗戦数'};
+function openTileDrill(kind){
+  const label = TILE_LABELS[kind] || kind;
+  document.getElementById('drillTitle').textContent = label+'の内訳';
+  document.getElementById('drillSub').textContent = currentPeriodLabel;
+
+  if(kind === 'contacted'){
+    const rows = currentSpotDetail.slice().reverse().map(function(r){
+      return [r[0], escapeHtml(r[1]), escapeHtml(r[2]), escapeHtml(r[3])];
+    });
+    document.getElementById('drillBody').innerHTML =
+      sectionTitle('対面したスポット一覧（'+rows.length+'件）') +
+      buildTable(['日付','メンバー','スポット名','タグ'], rows, '該当データなし');
+  } else if(kind === 'visit'){
+    const rows = currentHistoryDetail.filter(function(r){return r[2]==='visit_punch';}).slice().reverse().map(function(r){
+      return [r[0], escapeHtml(r[1]), r[3]||'—'];
+    });
+    document.getElementById('drillBody').innerHTML =
+      sectionTitle('「訪問（アポインター）」打刻一覧（'+rows.length+'件）') +
+      buildTable(['日付','メンバー','時刻'], rows, '該当データなし');
+  } else if(kind === 'ap'){
+    const rows = currentHistoryDetail.filter(function(r){return r[2]==='atokaku_punch';}).slice().reverse().map(function(r){
+      return [r[0], escapeHtml(r[1]), r[3]||'—'];
+    });
+    document.getElementById('drillBody').innerHTML =
+      sectionTitle('「アポ後確依頼」打刻一覧（'+rows.length+'件）') +
+      buildTable(['日付','メンバー','時刻'], rows, '該当データなし');
+  } else if(kind === 'shodan_yotei'){
+    const rows = currentScheduleDetail.slice().reverse().map(function(r){
+      return [r[0], escapeHtml(r[1]), escapeHtml(r[2]), escapeHtml(r[3])];
+    });
+    document.getElementById('drillBody').innerHTML =
+      sectionTitle('商談予定一覧（'+rows.length+'件）') +
+      buildTable(['日付','アポインター','タイトル','カテゴリ'], rows, '該当データなし');
+  } else {
+    const rows = currentMembers.slice().sort(function(a,b){ return (b[kind]||0)-(a[kind]||0); })
+      .map(function(m){ return [escapeHtml(m.name), '<span class="fw">'+fmtN(m[kind]||0)+'</span>']; });
+    document.getElementById('drillBody').innerHTML =
+      sectionTitle('メンバー別') + buildTable(['メンバー', label], rows, '該当データなし');
+  }
+  document.getElementById('drillModal').classList.add('show');
+}
+
+document.querySelectorAll('.tile.clickable').forEach(function(tile){
+  tile.addEventListener('click', function(){ openTileDrill(tile.dataset.tile); });
+});
+document.getElementById('drillClose').addEventListener('click', function(){
+  document.getElementById('drillModal').classList.remove('show');
+});
+document.getElementById('drillModal').addEventListener('click', function(e){
+  if(e.target.id === 'drillModal') e.currentTarget.classList.remove('show');
+});
+document.addEventListener('keydown', function(e){
+  if(e.key === 'Escape') document.getElementById('drillModal').classList.remove('show');
+});
+
+function mondayOf(dateStr){
+  const d = new Date(dateStr+'T00:00:00');
+  const day = (d.getDay()+6)%7;
+  d.setDate(d.getDate()-day);
+  return d.toISOString().slice(0,10);
+}
+function addDays(dateStr,n){
+  const d = new Date(dateStr+'T00:00:00'); d.setDate(d.getDate()+n); return d.toISOString().slice(0,10);
+}
+
+const allDates = Array.from(new Set(SPOT_RECORDS.concat(REPORT_RECORDS).concat(HISTORY_RECORDS).concat(SCHEDULE_RECORDS).map(function(r){return r[0];}))).sort();
+const uniqueMonths = Array.from(new Set(allDates.map(function(d){return d.slice(0,7);}))).sort();
+const uniqueWeeks = Array.from(new Set(allDates.map(mondayOf))).sort();
+
+function buildPickers(){
+  document.getElementById('dayPicker').innerHTML = allDates.slice().reverse().map(function(d){
+    return '<option value="'+d+'">'+d+'</option>';
+  }).join('');
+  document.getElementById('weekPicker').innerHTML = uniqueWeeks.slice().reverse().map(function(w){
+    return '<option value="'+w+'">'+w+' 〜 '+addDays(w,6)+'</option>';
+  }).join('');
+  document.getElementById('monthPicker').innerHTML = uniqueMonths.slice().reverse().map(function(m){
+    const parts = m.split('-'); return '<option value="'+m+'">'+parts[0]+'年'+parseInt(parts[1],10)+'月</option>';
+  }).join('');
+}
+
+let currentPeriod = 'all';
+
+function applyPeriod(){
+  let pred, label;
+  if(currentPeriod === 'all'){
+    pred = function(d){return true;}; label = ALL_PERIOD_LABEL;
+  } else if(currentPeriod === 'day'){
+    const v = document.getElementById('dayPicker').value;
+    pred = function(d){return d===v;}; label = v+'（日次）';
+  } else if(currentPeriod === 'week'){
+    const v = document.getElementById('weekPicker').value;
+    const end = addDays(v,6);
+    pred = function(d){return d>=v && d<=end;}; label = v+' 〜 '+end+'（週次）';
+  } else if(currentPeriod === 'month'){
+    const v = document.getElementById('monthPicker').value;
+    pred = function(d){return d.slice(0,7)===v;}; label = v+'（月次）';
+  }
+  renderPeriod(
+    SPOT_RECORDS.filter(function(r){return pred(r[0]);}),
+    REPORT_RECORDS.filter(function(r){return pred(r[0]);}),
+    HISTORY_RECORDS.filter(function(r){return pred(r[0]);}),
+    SCHEDULE_RECORDS.filter(function(r){return pred(r[0]);}),
+    SPOT_DETAIL.filter(function(r){return pred(r[0]);}),
+    HISTORY_DETAIL.filter(function(r){return pred(r[0]);}),
+    SCHEDULE_DETAIL.filter(function(r){return pred(r[0]);}),
+    label
+  );
+}
+
+document.querySelectorAll('.period-btn').forEach(function(btn){
+  btn.addEventListener('click', function(){
+    document.querySelectorAll('.period-btn').forEach(function(b){b.classList.remove('active');});
+    btn.classList.add('active');
+    currentPeriod = btn.dataset.period;
+    document.getElementById('dayPicker').style.display = currentPeriod==='day' ? '' : 'none';
+    document.getElementById('weekPicker').style.display = currentPeriod==='week' ? '' : 'none';
+    document.getElementById('monthPicker').style.display = currentPeriod==='month' ? '' : 'none';
+    applyPeriod();
+  });
+});
+document.getElementById('dayPicker').addEventListener('change', applyPeriod);
+document.getElementById('weekPicker').addEventListener('change', applyPeriod);
+document.getElementById('monthPicker').addEventListener('change', applyPeriod);
+
+buildPickers();
+applyPeriod();
+</script>
+</body>
+</html>
