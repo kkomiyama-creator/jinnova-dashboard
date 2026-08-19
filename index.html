@@ -84,7 +84,7 @@
 <div class="wrap">
   <div class="header">
     <h1>JINNOVA様 専用ダッシュボード</h1>
-    <div class="sub">対象期間：<span id="periodLabel">2026-08-12 〜 2026-08-19（全期間・新運用ルール開始日〜本日）</span> ／ 更新：2026-08-19 19:57</div>
+    <div class="sub">対象期間：<span id="periodLabel">2026-08-12 〜 2026-08-19（全期間・新運用ルール開始日〜本日）</span> ／ 更新：2026-08-19 20:02</div>
   </div>
 
   <div class="periodbar">
@@ -128,7 +128,7 @@
   <div class="card">
     <h2>メンバー別実績<span style="font-weight:400;color:var(--text-xs);font-size:11px;"> — 列見出しクリックで並び替え、行クリックで日別内訳</span></h2>
     <table id="memberTable"></table>
-    <div class="note">※ 実績データなし（現在Cyzen上に活動記録が見当たりません）：後藤陽太・倉住昇吾・鎮守灯・津崎涼</div>
+    <div class="note">※ 実績データなし（現在Cyzen上に活動記録が見当たりません）：鎮守灯・津崎涼・後藤陽太・倉住昇吾</div>
     <div class="note"></div>
     <div class="note">※ 商談予定1件は参加者からアポインターを一意に判定できなかったため、メンバー別の集計から除外しています（合計の商談予定数にも含まれません）。</div>
   </div>
@@ -140,9 +140,12 @@
   </div>
 
   <div class="card">
-    <h2>アポ獲得報告の定性情報</h2>
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:14px;">
+      <h2 style="margin:0;">アポ獲得報告の定性情報</h2>
+      <select class="day-picker" id="qualMemberFilter"><option value="">全員</option></select>
+    </div>
     <div id="qualView"></div>
-    <div class="note">アポ獲得報告書の追加項目（太陽光容量・電気代・家族構成・年齢層・名乗りメーカーなど、すべて任意入力）の回答分布です。件数が少ないうちは参考値としてご覧ください。</div>
+    <div class="note">アポ獲得報告書の追加項目（太陽光容量・電気代・家族構成・年齢層・名乗りメーカーなど、すべて任意入力）の回答分布です。上部の「表示期間」（日次/週次/月次/全期間）とこのメンバー選択の両方で絞り込めます。件数が少ないうちは参考値としてご覧ください。</div>
   </div>
 
   <div class="card">
@@ -318,11 +321,13 @@ function renderMap(spotDetail){
   setTimeout(function(){ mapInstance.invalidateSize(); }, 50);
 }
 
-// ---------- アポ獲得報告の定性情報（項目別の回答分布） ----------
-function renderQualitative(qualRecords){
+// ---------- アポ獲得報告の定性情報（項目別の回答分布・表示期間とメンバーの両方で絞り込み） ----------
+let currentQualRecords = [];
+
+function drawQualitativeBars(qualRecords){
   const el = document.getElementById('qualView');
   if(!qualRecords.length){
-    el.innerHTML = '<div class="empty-row">この期間のアポ獲得報告はありません</div>';
+    el.innerHTML = '<div class="empty-row">該当するアポ獲得報告はありません</div>';
     return;
   }
   const byItem = {};
@@ -345,6 +350,25 @@ function renderQualitative(qualRecords){
     return '<div class="qual-group"><div class="qual-group-title">'+escapeHtml(itemName)+'</div>'+rows+'</div>';
   }).join('');
 }
+
+function applyQualFilter(){
+  const sel = document.getElementById('qualMemberFilter').value;
+  const filtered = sel ? currentQualRecords.filter(function(r){return r[1]===sel;}) : currentQualRecords;
+  drawQualitativeBars(filtered);
+}
+
+function renderQualitative(qualRecords){
+  currentQualRecords = qualRecords;
+  const sel = document.getElementById('qualMemberFilter');
+  const prevValue = sel.value;
+  const names = Array.from(new Set(currentMembers.map(function(m){return m.name;}))).sort(function(a,b){return a.localeCompare(b,'ja');});
+  sel.innerHTML = '<option value="">全員</option>' + names.map(function(n){
+    return '<option value="'+escapeHtml(n)+'">'+escapeHtml(n)+'</option>';
+  }).join('');
+  sel.value = names.includes(prevValue) ? prevValue : '';
+  applyQualFilter();
+}
+document.getElementById('qualMemberFilter').addEventListener('change', applyQualFilter);
 
 function escapeHtml(s){
   return String(s).replace(/[&<>"']/g, function(c){
