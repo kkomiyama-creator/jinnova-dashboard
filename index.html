@@ -3,6 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <title>JINNOVA様 専用ダッシュボード</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <style>
   :root{
     --navy:#001F5F; --blue:#1457DA; --blue-pale:#EAF1FB; --border:#E2E8F0; --slate:#F5F7FA;
@@ -67,13 +69,22 @@
   .modal-close{border:none;background:none;font-size:16px;color:var(--text-sub);cursor:pointer;width:28px;height:28px;border-radius:8px;flex:none;}
   .modal-close:hover{background:var(--blue-pale);color:var(--text);}
   .modal-body{overflow:auto;padding:0;}
+  #mapView{height:420px;border-radius:10px;z-index:1;}
+  .qual-group{margin-bottom:18px;}
+  .qual-group:last-child{margin-bottom:0;}
+  .qual-group-title{font-size:12.5px;font-weight:700;color:var(--navy);margin-bottom:8px;}
+  .qual-bar-row{display:flex;align-items:center;gap:8px;margin-bottom:5px;font-size:12px;}
+  .qual-bar-label{width:150px;flex-shrink:0;color:var(--text-sub);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .qual-bar-track{flex:1;background:var(--slate);border-radius:4px;height:16px;overflow:hidden;}
+  .qual-bar-fill{background:var(--blue);height:100%;border-radius:4px;min-width:2px;}
+  .qual-bar-count{width:32px;text-align:right;font-weight:700;color:var(--text);flex-shrink:0;}
 </style>
 </head>
 <body>
 <div class="wrap">
   <div class="header">
     <h1>JINNOVA様 専用ダッシュボード</h1>
-    <div class="sub">対象期間：<span id="periodLabel">2026-08-12 〜 2026-08-19（全期間・新運用ルール開始日〜本日）</span> ／ 更新：2026-08-19 18:26</div>
+    <div class="sub">対象期間：<span id="periodLabel">2026-08-12 〜 2026-08-19（全期間・新運用ルール開始日〜本日）</span> ／ 更新：2026-08-19 18:39</div>
   </div>
 
   <div class="periodbar">
@@ -117,9 +128,21 @@
   <div class="card">
     <h2>メンバー別実績<span style="font-weight:400;color:var(--text-xs);font-size:11px;"> — 列見出しクリックで並び替え、行クリックで日別内訳</span></h2>
     <table id="memberTable"></table>
-    <div class="note">※ 実績データなし（現在Cyzen上に活動記録が見当たりません）：津崎涼・鎮守灯・倉住昇吾・後藤陽太</div>
+    <div class="note">※ 実績データなし（現在Cyzen上に活動記録が見当たりません）：津崎涼・倉住昇吾・鎮守灯・後藤陽太</div>
     <div class="note"></div>
     <div class="note">※ 商談予定1件は参加者からアポインターを一意に判定できなかったため、メンバー別の集計から除外しています（合計の商談予定数にも含まれません）。</div>
+  </div>
+
+  <div class="card">
+    <h2>商圏マップ（対面したスポット）<span style="font-weight:400;color:var(--text-xs);font-size:11px;"> — ピンクリックで詳細</span></h2>
+    <div id="mapView"></div>
+    <div class="note">現在の表示期間で対面したスポットのみ表示します。緯度経度が記録されているスポットのみが対象です。</div>
+  </div>
+
+  <div class="card">
+    <h2>アポ獲得報告の定性情報</h2>
+    <div id="qualView"></div>
+    <div class="note">アポ獲得報告書の追加項目（太陽光容量・電気代・家族構成・年齢層・名乗りメーカーなど、すべて任意入力）の回答分布です。件数が少ないうちは参考値としてご覧ください。</div>
   </div>
 
   <div class="card">
@@ -160,10 +183,11 @@
 const SPOT_RECORDS = [["2026-08-14", "中島将暢", "contract"], ["2026-08-15", "長谷川拓耶", "ap"], ["2026-08-15", "我妻拓馬", "absent"], ["2026-08-15", "我妻拓馬", "taimen_ng"], ["2026-08-15", "我妻拓馬", "taimen_ng"], ["2026-08-15", "我妻拓馬", "absent"], ["2026-08-15", "角谷成映", "ap"], ["2026-08-15", "栗山裕仁", "absent"], ["2026-08-15", "栗山裕仁", "absent"], ["2026-08-16", "角谷成映", "ap"], ["2026-08-16", "大谷勇斗", "ap"], ["2026-08-16", "我妻拓馬", "ap"], ["2026-08-16", "長谷川拓耶", "ap"]]; // [日付, 氏名, バケット]（対面の元データ）
 const REPORT_RECORDS = [["2026-08-13", "栗山裕仁", "seiyaku"], ["2026-08-13", "栗山裕仁", "seiyaku"], ["2026-08-14", "中島将暢", "seiyaku"], ["2026-08-14", "栗山裕仁", "seiyaku"], ["2026-08-14", "栗山裕仁", "seiyaku"], ["2026-08-16", "栗山裕仁", "seiyaku"], ["2026-08-18", "栗山裕仁", "seiyaku"], ["2026-08-18", "栗山裕仁", "seiyaku"]]; // [日付, 氏名, 種別]（アポ獲得報告・成約・敗戦・提案中の元データ）
 const HISTORY_RECORDS = [["2026-08-15", "角谷成映", "atokaku_punch"], ["2026-08-15", "栗山裕仁", "atokaku_punch"], ["2026-08-15", "栗山裕仁", "atokaku_punch"], ["2026-08-15", "長谷川拓耶", "atokaku_punch"], ["2026-08-16", "大谷勇斗", "atokaku_punch"], ["2026-08-16", "我妻拓馬", "atokaku_punch"], ["2026-08-16", "角谷成映", "atokaku_punch"], ["2026-08-16", "長谷川拓耶", "atokaku_punch"], ["2026-08-19", "落水田匡平", "atokaku_punch"]]; // [日付, 氏名, 種別]（訪問・アポ後確依頼の打刻の元データ）
-const SPOT_DETAIL = [["2026-08-15", "長谷川拓耶", "FF-SH-FS-20260815-560", "AP獲得(お客様名記載)", "鹿児島県霧島市国分新町1362-1"], ["2026-08-15", "我妻拓馬", "FF-SH-FS-20260815-350", "対面お断り(理由記載)", "愛知県西尾市一色町味浜上乾地4-4"], ["2026-08-15", "我妻拓馬", "FF-SH-FS-20260815-347", "対面お断り(理由記載)", "愛知県西尾市一色町味浜上乾地4-4"], ["2026-08-15", "角谷成映", "釘田様", "AP獲得(お客様名記載)", "鹿児島県霧島市隼人町住吉71"], ["2026-08-16", "角谷成映", "永山様", "AP獲得(お客様名記載)", "鹿児島県霧島市国分清水1丁目4-9-5"], ["2026-08-16", "大谷勇斗", "山本様 Qセルズ", "AP獲得(お客様名記載)", "愛知県岡崎市中島東町3丁目1-20"], ["2026-08-16", "我妻拓馬", "FF-SH-FS-20260816-258", "AP獲得(お客様名記載)", "愛知県岡崎市中島東町3丁目8-2"], ["2026-08-16", "長谷川拓耶", "FF-SH-FS-20260816-43", "AP獲得(お客様名記載)", "鹿児島県姶良市加治木町反土2895-3"]]; // [日付, 氏名, スポット名, タグ, 住所]（対面数の内訳明細）
+const SPOT_DETAIL = [["2026-08-15", "長谷川拓耶", "FF-SH-FS-20260815-560", "AP獲得(お客様名記載)", "鹿児島県霧島市国分新町1362-1", 31.7617801144488, 130.7808804658678], ["2026-08-15", "我妻拓馬", "FF-SH-FS-20260815-350", "対面お断り(理由記載)", "愛知県西尾市一色町味浜上乾地4-4", 34.81951856282004, 137.0255916621895], ["2026-08-15", "我妻拓馬", "FF-SH-FS-20260815-347", "対面お断り(理由記載)", "愛知県西尾市一色町味浜上乾地4-4", 34.8193453236222, 137.025985422065], ["2026-08-15", "角谷成映", "釘田様", "AP獲得(お客様名記載)", "鹿児島県霧島市隼人町住吉71", 31.7209098392671, 130.7445031918786], ["2026-08-16", "角谷成映", "永山様", "AP獲得(お客様名記載)", "鹿児島県霧島市国分清水1丁目4-9-5", 31.75117084228465, 130.7717191807485], ["2026-08-16", "大谷勇斗", "山本様 Qセルズ", "AP獲得(お客様名記載)", "愛知県岡崎市中島東町3丁目1-20", 34.89077286625, 137.12497824973], ["2026-08-16", "我妻拓馬", "FF-SH-FS-20260816-258", "AP獲得(お客様名記載)", "愛知県岡崎市中島東町3丁目8-2", 34.89144074487543, 137.1250778334719], ["2026-08-16", "長谷川拓耶", "FF-SH-FS-20260816-43", "AP獲得(お客様名記載)", "鹿児島県姶良市加治木町反土2895-3", 31.74409012476451, 130.6556662145969]]; // [日付, 氏名, スポット名, タグ, 住所]（対面数の内訳明細）
 const HISTORY_DETAIL = [["2026-08-15", "角谷成映", "atokaku_punch", "05:27", "鹿児島県霧島市隼人町住吉"], ["2026-08-15", "栗山裕仁", "atokaku_punch", "02:27", "鹿児島県鹿児島市下福元町"], ["2026-08-15", "栗山裕仁", "atokaku_punch", "01:18", "鹿児島県鹿児島市坂之上七丁目"], ["2026-08-15", "長谷川拓耶", "atokaku_punch", "10:03", "鹿児島県霧島市国分新町"], ["2026-08-16", "大谷勇斗", "atokaku_punch", "08:13", "愛知県岡崎市中島東町三丁目"], ["2026-08-16", "我妻拓馬", "atokaku_punch", "07:34", "愛知県岡崎市中島東町三丁目"], ["2026-08-16", "角谷成映", "atokaku_punch", "09:47", "鹿児島県霧島市国分新町"], ["2026-08-16", "長谷川拓耶", "atokaku_punch", "00:39", "鹿児島県姶良市加治木町反土"], ["2026-08-19", "落水田匡平", "atokaku_punch", "05:15", "鹿児島県鹿児島市若葉町"]]; // [日付, 氏名, 種別, 時刻, 住所]（訪問数の内訳明細）
 const SCHEDULE_RECORDS = [["2026-08-13", "栗山裕仁", "kakutei"], ["2026-08-14", "栗山裕仁", "kakutei"], ["2026-08-14", "栗山裕仁", "kakutei"], ["2026-08-16", "栗山裕仁", "kakutei"], ["2026-08-18", "長谷川拓耶", "kakutei"], ["2026-08-18", "栗山裕仁", "kakutei"], ["2026-08-19", "栗山裕仁", "kari"]]; // [日付, 氏名(アポインター), カテゴリ種別]（商談予定の元データ）
 const SCHEDULE_DETAIL = [["2026-08-13", "栗山裕仁", "栗山　鹿児島市", "確定", "鹿児島県霧島市国分湊876-8"], ["2026-08-14", "栗山裕仁", "栗山　霧島市", "確定", "鹿児島県霧島市国分下井1722-2"], ["2026-08-14", "栗山裕仁", "栗山　霧島市　新堀様", "確定", "鹿児島県霧島市隼人町住吉564-5"], ["2026-08-16", "栗山裕仁", "栗山　霧島市　堀之内様", "確定", "鹿児島県霧島市国分重久567-1"], ["2026-08-18", "長谷川拓耶", "大迫様", "確定", "鹿児島県霧島市国分新町1362-1"], ["2026-08-18", "栗山裕仁", "栗山　霧島市", "確定", "鹿児島県霧島市国分広瀬3丁目7-9"], ["2026-08-19", "栗山裕仁", "FF-SH-FS-20260815-31", "仮予定", "鹿児島県鹿児島市坂之上7丁目40-35"]]; // [日付, 氏名, タイトル, カテゴリ, 住所]（商談予定の内訳明細）
+const QUALITATIVE_RECORDS = []; // [日付, 氏名, 項目名, 回答]（アポ獲得報告の定性項目）
 const ALL_PERIOD_LABEL = "2026-08-12 〜 2026-08-19（全期間・新運用ルール開始日〜本日）";
 const CONTACTED_BUCKETS = new Set(['taimen_ng','ap_maybe','ap']);
 
@@ -222,7 +246,7 @@ let currentSpotDetail = [];
 let currentHistoryDetail = [];
 let currentScheduleDetail = [];
 
-function renderPeriod(spotRecords, reportRecords, historyRecords, scheduleRecords, spotDetail, historyDetail, scheduleDetail, label){
+function renderPeriod(spotRecords, reportRecords, historyRecords, scheduleRecords, spotDetail, historyDetail, scheduleDetail, qualRecords, label){
   currentSpotDetail = spotDetail;
   currentHistoryDetail = historyDetail;
   currentScheduleDetail = scheduleDetail;
@@ -263,6 +287,63 @@ function renderPeriod(spotRecords, reportRecords, historyRecords, scheduleRecord
   currentMembers = members;
   currentPeriodLabel = label;
   renderMemberTable(members);
+  renderMap(spotDetail);
+  renderQualitative(qualRecords);
+}
+
+// ---------- 商圏マップ（Leaflet） ----------
+let mapInstance = null;
+let mapMarkers = [];
+function renderMap(spotDetail){
+  const pts = spotDetail.filter(function(r){ return typeof r[5]==='number' && typeof r[6]==='number'; });
+  if(!mapInstance){
+    mapInstance = L.map('mapView');
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap contributors', maxZoom: 19
+    }).addTo(mapInstance);
+  }
+  mapMarkers.forEach(function(m){ mapInstance.removeLayer(m); });
+  mapMarkers = [];
+  if(pts.length){
+    pts.forEach(function(r){
+      const marker = L.marker([r[5], r[6]]).addTo(mapInstance);
+      marker.bindPopup('<b>'+escapeHtml(r[2])+'</b><br>'+escapeHtml(r[3])+'<br>'+escapeHtml(r[1])+' ／ '+r[0]+'<br>'+escapeHtml(r[4]));
+      mapMarkers.push(marker);
+    });
+    const bounds = L.latLngBounds(pts.map(function(r){ return [r[5], r[6]]; }));
+    mapInstance.fitBounds(bounds, {padding:[24,24], maxZoom:15});
+  } else {
+    mapInstance.setView([31.596, 130.558], 9); // 鹿児島県庁付近をデフォルト表示
+  }
+  setTimeout(function(){ mapInstance.invalidateSize(); }, 50);
+}
+
+// ---------- アポ獲得報告の定性情報（項目別の回答分布） ----------
+function renderQualitative(qualRecords){
+  const el = document.getElementById('qualView');
+  if(!qualRecords.length){
+    el.innerHTML = '<div class="empty-row">この期間のアポ獲得報告はありません</div>';
+    return;
+  }
+  const byItem = {};
+  const order = [];
+  qualRecords.forEach(function(r){
+    const itemName = r[2], val = r[3];
+    if(!byItem[itemName]){ byItem[itemName] = {}; order.push(itemName); }
+    byItem[itemName][val] = (byItem[itemName][val]||0)+1;
+  });
+  el.innerHTML = order.map(function(itemName){
+    const counts = byItem[itemName];
+    const entries = Object.keys(counts).map(function(v){ return [v, counts[v]]; }).sort(function(a,b){ return b[1]-a[1]; });
+    const max = entries[0][1];
+    const rows = entries.slice(0,12).map(function(e){
+      const pct = Math.round(e[1]/max*100);
+      return '<div class="qual-bar-row"><div class="qual-bar-label" title="'+escapeHtml(e[0])+'">'+escapeHtml(e[0])+'</div>'+
+        '<div class="qual-bar-track"><div class="qual-bar-fill" style="width:'+pct+'%;"></div></div>'+
+        '<div class="qual-bar-count">'+e[1]+'</div></div>';
+    }).join('');
+    return '<div class="qual-group"><div class="qual-group-title">'+escapeHtml(itemName)+'</div>'+rows+'</div>';
+  }).join('');
 }
 
 function escapeHtml(s){
@@ -502,6 +583,7 @@ function applyPeriod(){
     SPOT_DETAIL.filter(function(r){return pred(r[0]);}),
     HISTORY_DETAIL.filter(function(r){return pred(r[0]);}),
     SCHEDULE_DETAIL.filter(function(r){return pred(r[0]);}),
+    QUALITATIVE_RECORDS.filter(function(r){return pred(r[0]);}),
     label
   );
 }
