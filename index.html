@@ -124,7 +124,7 @@
 <div class="wrap">
   <div class="header">
     <h1>JINNOVA様 専用ダッシュボード</h1>
-    <div class="sub">対象期間：<span id="periodLabel">2026-08-12 〜 2026-08-19（全期間・新運用ルール開始日〜本日）</span> ／ 更新：2026-08-19 20:58</div>
+    <div class="sub">対象期間：<span id="periodLabel">2026-08-12 〜 2026-08-19（全期間・新運用ルール開始日〜本日）</span> ／ 更新：2026-08-19 21:01</div>
   </div>
 
   <div class="periodbar">
@@ -168,7 +168,7 @@
   <div class="card">
     <h2>メンバー別実績<span style="font-weight:400;color:var(--text-xs);font-size:11px;"> — 列見出しクリックで並び替え、行クリックで日別内訳</span></h2>
     <table id="memberTable"></table>
-    <div class="note">※ 実績データなし（現在Cyzen上に活動記録が見当たりません）：後藤陽太・倉住昇吾・鎮守灯・津崎涼</div>
+    <div class="note">※ 実績データなし（現在Cyzen上に活動記録が見当たりません）：津崎涼・倉住昇吾・鎮守灯・後藤陽太</div>
     <div class="note"></div>
     <div class="note">※ 商談予定1件は参加者からアポインターを一意に判定できなかったため、メンバー別の集計から除外しています（合計の商談予定数にも含まれません）。</div>
   </div>
@@ -776,7 +776,7 @@ function renderTimeAnalysis(){
   const stats = [
     {l:'最もアポ率が高い時間帯（対面5件以上）', v: bestHour.h+'時', s: 'アポ率 '+bestHour.ap_rate+'%'},
     {l:'夕方(16-18時) vs 日中(9-15時) アポ率', v: middayRate+'% → '+eveRate+'%', s: eveRate>middayRate ? '夕方の方が高い' : '日中の方が高い'},
-    {l:'週末 vs 平日 アポ率', v: weekdayRate+'% → '+weekendRate+'%', s: weekendRate>weekdayRate ? '週末の方が高い' : '平日の方が高い'},
+    {l:'平日 vs 週末 アポ率', v: weekdayRate+'% → '+weekendRate+'%', s: weekendRate>weekdayRate ? '週末の方が高い' : '平日の方が高い'},
     {l:'ピーク訪問時間帯', v: peakVisit.h+'時', s: '訪問が最も集中'},
   ];
   document.getElementById('timeStats').innerHTML = stats.map(function(s){
