@@ -155,21 +155,21 @@
 <div class="wrap">
   <div class="header">
     <h1>JINNOVA様 専用ダッシュボード</h1>
-    <div class="sub">対象期間：<span id="periodLabel">2026-08-12 〜 2026-08-20（全期間・新運用ルール開始日〜本日）</span> ／ 更新：2026-08-20 09:43</div>
+    <div class="sub">対象期間：<span id="periodLabel">2026-08-12 〜 2026-08-20（全期間・新運用ルール開始日〜本日）</span> ／ 更新：2026-08-20 09:47</div>
   </div>
 
   <div class="periodbar">
     <span class="label">表示期間</span>
     <div class="period-switch">
-      <button class="period-btn active" data-period="all">全期間</button>
+      <button class="period-btn" data-period="all">全期間</button>
       <button class="period-btn" data-period="month">月次</button>
       <button class="period-btn" data-period="week">週次(月〜日)</button>
-      <button class="period-btn" data-period="day">日次</button>
+      <button class="period-btn active" data-period="day">日次</button>
       <button class="period-btn" data-period="custom">カスタム</button>
     </div>
     <select class="day-picker" id="monthPicker" style="display:none;"></select>
     <select class="day-picker" id="weekPicker" style="display:none;"></select>
-    <select class="day-picker" id="dayPicker" style="display:none;"></select>
+    <select class="day-picker" id="dayPicker"></select>
     <span id="customPicker" style="display:none;align-items:center;gap:6px;">
       <input type="date" class="day-picker" id="customFrom">
       <span style="color:var(--text-sub);font-size:12px;">〜</span>
@@ -217,7 +217,7 @@
       <input type="text" id="memberSearch" placeholder="🔍 メンバー名で検索・絞り込み" style="width:100%;max-width:280px;font-family:inherit;font-size:13px;padding:9px 12px;border:1px solid var(--border);border-radius:8px;background:#fff;color:var(--text);">
     </div>
     <table id="memberTable"></table>
-    <div class="note">※ 実績データなし（現在Cyzen上に活動記録が見当たりません）：後藤陽太・倉住昇吾・津崎涼・鎮守灯</div>
+    <div class="note">※ 実績データなし（現在Cyzen上に活動記録が見当たりません）：津崎涼・倉住昇吾・後藤陽太・鎮守灯</div>
     <div class="note"></div>
     <div class="note">※ 商談予定1件は参加者からアポインターを一意に判定できなかったため、メンバー別の集計から除外しています（合計の商談予定数にも含まれません）。</div>
     <div class="note">※ 橋口航大・曽我部千稜は参考のためこの表にのみ掲載しています（Cyzen上の会社名タグはJINNOVA様ではなく、橋口航大＝株式会社Fit Founder、曽我部千稜＝株式会社Next Place）。上部の合算KPIタイル・訪問ファネル・現場インサイト・時間帯×曜日分析には含まれません。</div>
@@ -822,7 +822,7 @@ function buildPickers(){
   if(!customToEl.value) customToEl.value = TODAY_JS;
 }
 
-let currentPeriod = 'all';
+let currentPeriod = 'day';
 let currentPerson = 'all';
 
 function applyPeriod(){
