@@ -2,6 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>JINNOVA様 専用ダッシュボード</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -31,14 +32,14 @@
   .kpi .l{font-size:11px;color:var(--text-sub);margin-bottom:6px;}
   .kpi .v{font-size:26px;font-weight:800;color:var(--navy);}
   .kpi .m{font-size:11px;color:var(--text-xs);margin-top:4px;}
-  .card{background:#fff;border:1px solid var(--border);border-radius:10px;padding:20px;margin-bottom:20px;}
+  .card{background:#fff;border:1px solid var(--border);border-radius:10px;padding:20px;margin-bottom:20px;overflow-x:auto;}
   .card h2{font-size:15px;margin:0 0 14px;color:var(--navy);}
   table{width:100%;border-collapse:collapse;font-size:13px;}
   th{text-align:left;padding:8px 10px;color:var(--text-sub);font-weight:600;border-bottom:2px solid var(--border);font-size:12px;}
-  td{padding:9px 10px;border-bottom:1px solid var(--border);}
+  td{padding:9px 10px;border-bottom:1px solid var(--border);white-space:nowrap;}
   .tr{text-align:right;}
   .fw{font-weight:700;}
-  .rep-cell{display:flex;align-items:center;gap:10px;}
+  .rep-cell{display:flex;align-items:center;gap:10px;white-space:nowrap;}
   .avatar{width:26px;height:26px;border-radius:50%;background:var(--blue);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;}
   .chipcell{background:var(--blue-pale);}
   .chip{display:inline-block;padding:3px 10px;border-radius:20px;font-weight:700;font-size:12px;}
@@ -119,6 +120,35 @@
   .ins-sub{font-size:12px;color:var(--text);line-height:1.7;margin-bottom:10px;}
   .ins-action{background:var(--blue-pale);color:var(--navy);font-size:11.5px;font-weight:600;padding:9px 16px;line-height:1.6;}
   .ins-note{font-size:10px;color:var(--text-xs);padding:8px 16px 14px;line-height:1.5;}
+
+  /* ---------- スマホ表示（多くのメンバーがスマホで閲覧するため） ---------- */
+  @media (max-width:600px){
+    .wrap{padding:14px 10px 40px;}
+    .header{padding:18px 16px;border-radius:10px;}
+    .header h1{font-size:17px;}
+    .header .sub{font-size:11px;}
+    .periodbar{gap:6px;margin-bottom:16px;}
+    .period-switch{flex-wrap:wrap;gap:1px;}
+    .period-btn{padding:6px 10px;font-size:11px;}
+    .day-picker{font-size:11px;padding:6px 8px;}
+    #customPicker input{max-width:130px;}
+    .kpi{padding:10px;}
+    .kpi .l{font-size:10px;}
+    .kpi .v{font-size:19px;}
+    .kpi .m{font-size:9.5px;}
+    .card{padding:12px;border-radius:8px;margin-bottom:12px;}
+    .card h2{font-size:13.5px;}
+    table{font-size:11.5px;}
+    th, td{padding:6px 6px;}
+    .funnel{gap:4px;}
+    .fbar{font-size:13px;padding:8px 2px;}
+    .fname{font-size:9.5px;}
+    .warnbox{padding:10px 12px;font-size:11px;}
+    #mapView{height:280px;}
+    .modal-overlay{padding:8px;}
+    .modal-box{max-height:88vh;}
+    .heat-cell{min-height:15px;font-size:8px;}
+  }
 </style>
 </head>
 <body>
@@ -181,7 +211,7 @@
       <input type="text" id="memberSearch" placeholder="🔍 メンバー名で検索・絞り込み" style="width:100%;max-width:280px;font-family:inherit;font-size:13px;padding:9px 12px;border:1px solid var(--border);border-radius:8px;background:#fff;color:var(--text);">
     </div>
     <table id="memberTable"></table>
-    <div class="note">※ 実績データなし（現在Cyzen上に活動記録が見当たりません）：倉住昇吾・後藤陽太・津崎涼・鎮守灯</div>
+    <div class="note">※ 実績データなし（現在Cyzen上に活動記録が見当たりません）：鎮守灯・倉住昇吾・津崎涼・後藤陽太</div>
     <div class="note"></div>
     <div class="note">※ 商談予定1件は参加者からアポインターを一意に判定できなかったため、メンバー別の集計から除外しています（合計の商談予定数にも含まれません）。</div>
     <div class="note">※ 橋口航大・曽我部千稜は参考のためこの表にのみ掲載しています（Cyzen上の会社名タグはJINNOVA様ではなく、橋口航大＝株式会社Fit Founder、曽我部千稜＝株式会社Next Place）。上部の合算KPIタイル・訪問ファネル・現場インサイト・時間帯×曜日分析には含まれません。</div>
@@ -310,7 +340,8 @@ function deriveFromCounts(sc, rc, hc, ssc){
     ap_rate_taimen: pctOrNull(ap, contacted),
     ap_rate_visit: pctOrNull(ap, visit),
     yotei_rate_ap: pctOrNull(shodan_yotei, ap),
-    jisshi_rate: pctOrNull(shodan_jisshi, shodan_yotei)};
+    jisshi_rate: pctOrNull(shodan_jisshi, shodan_yotei),
+    contract_rate_ap: pctOrNull(contract, ap)};
 }
 
 function aggregateRecords(spotRecords, reportRecords, historyRecords, scheduleRecords){
@@ -539,8 +570,10 @@ const MEMBER_COLS = [
   {label:'対面', key:'contacted', num:true},
   {label:'アポ獲得', key:'ap', num:true},
   {label:'商談実施', key:'shodan_jisshi', num:true},
+  {label:'成約', key:'contract', num:true},
   {label:'対面率', key:'taimen_rate', num:true},
   {label:'アポ率', key:'ap_rate_taimen', num:true},
+  {label:'成約率(アポ→成約)', key:'contract_rate_ap', num:true},
 ];
 let memberSortCol = 1;
 let memberSortDir = -1;
@@ -570,8 +603,10 @@ function renderMemberTable(members){
       '<td class="tr">'+fmtN(m.contacted)+'</td>'+
       '<td class="tr fw">'+fmtN(m.ap)+'</td>'+
       '<td class="tr">'+fmtN(m.shodan_jisshi||0)+'</td>'+
+      '<td class="tr">'+fmtN(m.contract||0)+'</td>'+
       '<td class="tr chipcell"><span class="chip '+rateClass(m.taimen_rate,30,15)+'">'+fmtPct(m.taimen_rate)+'</span></td>'+
-      '<td class="tr chipcell"><span class="chip '+rateClass(m.ap_rate_taimen,10,3)+'">'+fmtPct(m.ap_rate_taimen)+'</span></td></tr>';
+      '<td class="tr chipcell"><span class="chip '+rateClass(m.ap_rate_taimen,10,3)+'">'+fmtPct(m.ap_rate_taimen)+'</span></td>'+
+      '<td class="tr chipcell"><span class="chip '+rateClass(m.contract_rate_ap,20,8)+'">'+fmtPct(m.contract_rate_ap)+'</span></td></tr>';
   }).join('') + '</tbody>') : '<tbody><tr><td colspan="'+MEMBER_COLS.length+'" class="empty-row">'+(q?'「'+escapeHtml(q)+'」に一致するメンバーがいません':'この期間の実績データがありません')+'</td></tr></tbody>';
   table.innerHTML = thead + tbody;
 
@@ -627,10 +662,11 @@ function openPersonDetail(name){
   const totalVisit = daily.reduce(function(s,d){return s+d.visit;},0);
   const totalAp = daily.reduce(function(s,d){return s+d.ap;},0);
   const totalContract = daily.reduce(function(s,d){return s+d.contract;},0);
+  const contractRateAp = pctOrNull(totalContract, totalAp);
 
   document.getElementById('drillTitle').textContent = name;
   document.getElementById('drillSub').textContent =
-    (dates[0]||'—')+' 〜 '+(dates[dates.length-1]||'—')+' 日別実績（全期間・累計: 訪問'+totalVisit+'件・アポ獲得'+totalAp+'件・成約'+totalContract+'件）';
+    (dates[0]||'—')+' 〜 '+(dates[dates.length-1]||'—')+' 日別実績（全期間・累計: 訪問'+totalVisit+'件・アポ獲得'+totalAp+'件・成約'+totalContract+'件・成約率(アポ→成約)'+fmtPct(contractRateAp)+'）';
 
   const dailyRows = daily.slice().reverse().map(function(d){
     return [d.date, fmtN(d.visit), fmtN(d.contacted), fmtN(d.ap), fmtN(d.shodan_yotei), fmtN(d.shodan_jisshi), fmtN(d.contract)];
