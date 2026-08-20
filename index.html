@@ -24,8 +24,9 @@
   .period-btn:hover{color:var(--text);}
   .period-btn.active{background:var(--blue);color:#fff;}
   .day-picker{font-family:inherit;font-size:12.5px;padding:6px 10px;border-radius:999px;border:1px solid var(--border);background:#fff;color:var(--text);cursor:pointer;}
-  .kpis{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;margin-bottom:24px;}
+  .kpis{display:grid;grid-template-columns:repeat(7,1fr);gap:12px;margin-bottom:24px;}
   @media (max-width:900px){ .kpis{grid-template-columns:repeat(3,1fr);} }
+  @media (max-width:520px){ .kpis{grid-template-columns:repeat(2,1fr);} }
   .kpi{background:#fff;border:1px solid var(--border);border-radius:10px;padding:16px;}
   .kpi .l{font-size:11px;color:var(--text-sub);margin-bottom:6px;}
   .kpi .v{font-size:26px;font-weight:800;color:var(--navy);}
@@ -124,7 +125,7 @@
 <div class="wrap">
   <div class="header">
     <h1>JINNOVA様 専用ダッシュボード</h1>
-    <div class="sub">対象期間：<span id="periodLabel">2026-08-12 〜 2026-08-20（全期間・新運用ルール開始日〜本日）</span> ／ 更新：2026-08-20 08:57</div>
+    <div class="sub">対象期間：<span id="periodLabel">2026-08-12 〜 2026-08-20（全期間・新運用ルール開始日〜本日）</span> ／ 更新：2026-08-20 09:07</div>
   </div>
 
   <div class="periodbar">
@@ -134,10 +135,16 @@
       <button class="period-btn" data-period="month">月次</button>
       <button class="period-btn" data-period="week">週次(月〜日)</button>
       <button class="period-btn" data-period="day">日次</button>
+      <button class="period-btn" data-period="custom">カスタム</button>
     </div>
     <select class="day-picker" id="monthPicker" style="display:none;"></select>
     <select class="day-picker" id="weekPicker" style="display:none;"></select>
     <select class="day-picker" id="dayPicker" style="display:none;"></select>
+    <span id="customPicker" style="display:none;align-items:center;gap:6px;">
+      <input type="date" class="day-picker" id="customFrom">
+      <span style="color:var(--text-sub);font-size:12px;">〜</span>
+      <input type="date" class="day-picker" id="customTo">
+    </span>
   </div>
 
   <div class="warnbox">
@@ -149,7 +156,8 @@
     <div class="kpi tile clickable" data-tile="visit"><div class="l">訪問数</div><div class="v" id="tileVisit">0</div><div class="m" id="tileVisitSub">7名の合算</div></div>
     <div class="kpi tile clickable" data-tile="contacted"><div class="l">対面数</div><div class="v" id="tileContacted">8</div><div class="m" id="tileContactedSub">対面率 —</div></div>
     <div class="kpi tile clickable" data-tile="ap"><div class="l">アポ獲得数</div><div class="v" id="tileAp">9</div><div class="m" id="tileApSub">アポ率 112.5%</div></div>
-    <div class="kpi tile clickable" data-tile="shodan_yotei"><div class="l">商談予定数</div><div class="v" id="tileYotei">7</div><div class="m" id="tileYoteiSub">商談化率 77.8%</div></div>
+    <div class="kpi tile clickable" data-tile="shodan_yotei"><div class="l">商談予定数</div><div class="v" id="tileYotei">4</div><div class="m" id="tileYoteiSub">商談化率 44.4%</div></div>
+    <div class="kpi tile clickable" data-tile="shodan_jisshi"><div class="l">商談実施数</div><div class="v" id="tileJisshi">0</div><div class="m" id="tileJisshiSub">実施率 0.0%</div></div>
     <div class="kpi tile clickable" data-tile="contract"><div class="l">成約数</div><div class="v" id="tileContract">8</div><div class="m">クローザー報告書ベース</div></div>
     <div class="kpi tile clickable" data-tile="lost"><div class="l">敗戦数</div><div class="v" id="tileLost">0</div><div class="m" id="tileLostSub">提案中 0件</div></div>
   </div>
@@ -160,18 +168,23 @@
       <div class="fstep"><div class="fbar" style="background:#1A56DB;" id="fbVisit">0</div><div class="fname">訪問</div></div>
       <div class="fstep"><div class="fbar" style="background:#1D4ED8;" id="fbContacted">8</div><div class="fname">対面</div></div>
       <div class="fstep"><div class="fbar" style="background:#2563EB;" id="fbAp">9</div><div class="fname">アポ獲得</div></div>
-      <div class="fstep"><div class="fbar" style="background:#7C3AED;" id="fbYotei">7</div><div class="fname">商談予定</div></div>
+      <div class="fstep"><div class="fbar" style="background:#7C3AED;" id="fbYotei">4</div><div class="fname">商談予定</div></div>
+      <div class="fstep"><div class="fbar" style="background:#9333EA;" id="fbJisshi">0</div><div class="fname">商談実施</div></div>
       <div class="fstep"><div class="fbar" style="background:#059669;" id="fbContract">8</div><div class="fname">成約</div></div>
     </div>
-    <div class="note" id="funnelNote">対面率（対面/訪問）＝—　／　アポ率（アポ/対面）＝112.5%　／　アポ率（アポ/訪問）＝—　／　商談化率（商談予定/アポ）＝77.8%</div>
+    <div class="note" id="funnelNote">対面率（対面/訪問）＝—　／　アポ率（アポ/対面）＝112.5%　／　アポ率（アポ/訪問）＝—　／　商談化率（商談予定/アポ）＝44.4%　／　実施率（商談実施/商談予定）＝0.0%</div>
   </div>
 
   <div class="card">
     <h2>メンバー別実績<span style="font-weight:400;color:var(--text-xs);font-size:11px;"> — 列見出しクリックで並び替え、行クリックで日別内訳</span></h2>
+    <div style="margin-bottom:10px;">
+      <input type="text" id="memberSearch" placeholder="🔍 メンバー名で検索・絞り込み" style="width:100%;max-width:280px;font-family:inherit;font-size:13px;padding:9px 12px;border:1px solid var(--border);border-radius:8px;background:#fff;color:var(--text);">
+    </div>
     <table id="memberTable"></table>
-    <div class="note">※ 実績データなし（現在Cyzen上に活動記録が見当たりません）：後藤陽太・津崎涼・倉住昇吾・鎮守灯</div>
+    <div class="note">※ 実績データなし（現在Cyzen上に活動記録が見当たりません）：津崎涼・後藤陽太・倉住昇吾・鎮守灯</div>
     <div class="note"></div>
     <div class="note">※ 商談予定1件は参加者からアポインターを一意に判定できなかったため、メンバー別の集計から除外しています（合計の商談予定数にも含まれません）。</div>
+    <div class="note">※ 橋口航大・曽我部千稜は参考のためこの表にのみ掲載しています（Cyzen上の会社名タグはJINNOVA様ではなく、橋口航大＝株式会社Fit Founder、曽我部千稜＝株式会社Next Place）。上部の合算KPIタイル・訪問ファネル・現場インサイト・時間帯×曜日分析には含まれません。</div>
   </div>
 
   <div class="card">
@@ -183,39 +196,20 @@
   <div class="card">
     <h2>現場インサイト<span style="font-weight:400;color:var(--text-xs);font-size:11px;"> — 実データから見えた発見と打ち手</span></h2>
     <div class="ins-grid">
-      <div class="ins-card">
-        <div class="ins-head"><div class="ins-ico" style="background:#EEF2FF;">🌆</div>
-          <div><div class="ins-tag">時間帯</div><div class="ins-title">訪問のピークは午後早め、アポが獲れるのは夕方</div></div></div>
-        <div class="ins-body"><div class="ins-big">45.1%<small> 16-18時のアポ率（対面比）</small></div><div class="ins-sub">訪問のピークは13時台ですが、対面後のアポ転換率は日中(9-15時)が16.5%なのに対し、夕方(16-18時)は<b>45.1%</b>と大きく上回ります。在宅率が上がる時間帯にクロージングが寄っている可能性があります。</div></div>
-        <div class="ins-action">📌 打ち手: 日中は新規の訪問数を稼ぎ、<b>夕方16-18時に対面・クロージングを寄せる</b>動き方を意識づける。</div>
-        <div class="ins-note">※2026-02〜の全スポット履歴（作成日時刻をJSTに補正）で集計。件数の少ない時間帯は参考値。</div>
-      </div>
-      <div class="ins-card">
-        <div class="ins-head"><div class="ins-ico" style="background:#EAFBF1;">📅</div>
-          <div><div class="ins-tag">曜日</div><div class="ins-title">週末（土日）の方が平日よりアポ率が高い</div></div></div>
-        <div class="ins-body"><div class="ins-big">33.6%<small> 土日のアポ率</small></div><div class="ins-sub">水木金（平日）のアポ率は21.6%なのに対し、土日は<b>33.6%</b>。月・火はほぼ稼働実績が無いため比較対象から除外しています。週末は在宅率の高さがアポ転換に効いている可能性があります。</div></div>
-        <div class="ins-action">📌 打ち手: <b>週末の稼働比重を維持・強化</b>しつつ、平日は再訪リストの消化や事前準備に充てる。</div>
-        <div class="ins-note">※同上の全期間データ。月・火のデータはほぼ無いため集計対象から除外。</div>
-      </div>
-      <div class="ins-card">
-        <div class="ins-head"><div class="ins-ico" style="background:#FEF2F2;">🚪</div>
-          <div><div class="ins-tag">打刻コンプライアンス</div><div class="ins-title">対面はできているのに「訪問（アポインター）」打刻が無い</div></div></div>
-        <div class="ins-body"><div class="ins-big">8<small>件 対面済みなのに訪問打刻ゼロ（2026-08-12〜）</small></div><div class="ins-sub">新ルール運用開始（2026-08-12）以降、対面数は8件記録されている一方、「訪問（アポインター）」の打刻は0件しかありません。現場で対面・商談はできているのに、打刻という「記録」だけが抜けている状態です。</div></div>
-        <div class="ins-action">📌 打ち手: 訪問時は<b>まず「訪問（アポインター）」を押してからインターホン</b>を徹底。押し忘れると後から取り戻せない点を再周知。</div>
-        <div class="ins-note">※訪問数は打刻ベース、対面数はスポットタグベースで出典が異なる（ダッシュボード上部の注記も参照）。</div>
-      </div>
-      <div class="ins-card">
-        <div class="ins-head"><div class="ins-ico" style="background:#ECFDF5;">🗺️</div>
-          <div><div class="ins-tag">商圏</div><div class="ins-title">商圏は数エリアに集中</div></div></div>
-        <div class="ins-body"><div class="ins-big">愛知県<small> が最多（4件）</small></div><div class="ins-sub">対面したスポットの所在地は「愛知県（4件）」に集中しています。</div></div>
-        <div class="ins-action">📌 打ち手: エリアを絞って<b>移動時間を減らし訪問密度を上げる</b>ことで、1日あたりの訪問数を積み増しできる余地があります。</div>
-        <div class="ins-note">※対面したスポットの住所文字列から都道府県を抽出（表示期間に関わらず全期間の対面スポットが対象）。</div>
+      <div class="ins-card" style="grid-column:1/-1;">
+        <div class="ins-head"><div class="ins-ico" style="background:#F1F5F9;">⏳</div>
+          <div><div class="ins-tag">データ集積中</div><div class="ins-title">新ルールの打刻がまだ十分に集まっていません</div></div></div>
+        <div class="ins-body"><div class="ins-big">0<small> / 30件（目安）</small></div>
+          <div class="ins-sub">現場インサイトと下の「時間帯×曜日分析」は、2026-08-12〜の「訪問（アポインター）」打刻を基に傾向を分析します。
+          傾向を語るには最低限の件数が必要なため、累計30件に達するまでは非表示にしています。
+          件数が貯まり次第、次回のダッシュボード更新（15分おき）で自動的に表示されます。</div></div>
+        <div class="ins-note">※以前は参考としてスポット全履歴を代用表示していましたが、新ルールと定義を揃えるため打刻ベースに統一しました。</div>
       </div></div>
     <div class="note">この現場インサイトと下の「時間帯×曜日分析」は、新運用ルールの入力コンプライアンス集計（上のKPIタイル群）とは異なり、<b>2026-02〜の全スポット履歴</b>を対象にしています（傾向を見るには件数が必要なため）。</div>
   </div>
 
   <div class="card">
-    <h2>時間帯 × 曜日 分析<span style="font-weight:400;color:var(--text-xs);font-size:11px;"> — 2026-02-28 〜 2026-08-16の全スポット履歴（作成時刻をJSTに補正）</span></h2>
+    <h2>時間帯 × 曜日 分析<span style="font-weight:400;color:var(--text-xs);font-size:11px;"> — データ集積中（訪問打刻 0/30件・目安に到達次第表示）</span></h2>
     <div class="area-summary" id="timeStats"></div>
     <div class="grid-2">
       <div style="border:1px solid var(--border);border-radius:10px;padding:14px;">
@@ -282,19 +276,20 @@
 
 <script>
 const SPOT_RECORDS = [["2026-08-14", "中島将暢", "contract"], ["2026-08-15", "長谷川拓耶", "ap"], ["2026-08-15", "我妻拓馬", "absent"], ["2026-08-15", "我妻拓馬", "taimen_ng"], ["2026-08-15", "我妻拓馬", "taimen_ng"], ["2026-08-15", "我妻拓馬", "absent"], ["2026-08-15", "角谷成映", "ap"], ["2026-08-15", "栗山裕仁", "absent"], ["2026-08-15", "栗山裕仁", "absent"], ["2026-08-16", "角谷成映", "ap"], ["2026-08-16", "大谷勇斗", "ap"], ["2026-08-16", "我妻拓馬", "ap"], ["2026-08-16", "長谷川拓耶", "ap"]]; // [日付, 氏名, バケット]（対面の元データ）
-const REPORT_RECORDS = [["2026-08-13", "栗山裕仁", "seiyaku"], ["2026-08-13", "栗山裕仁", "seiyaku"], ["2026-08-14", "中島将暢", "seiyaku"], ["2026-08-14", "栗山裕仁", "seiyaku"], ["2026-08-14", "栗山裕仁", "seiyaku"], ["2026-08-16", "栗山裕仁", "seiyaku"], ["2026-08-18", "栗山裕仁", "seiyaku"], ["2026-08-18", "栗山裕仁", "seiyaku"]]; // [日付, 氏名, 種別]（アポ獲得報告・成約・敗戦・提案中の元データ）
-const HISTORY_RECORDS = [["2026-08-15", "角谷成映", "atokaku_punch"], ["2026-08-15", "栗山裕仁", "atokaku_punch"], ["2026-08-15", "栗山裕仁", "atokaku_punch"], ["2026-08-15", "長谷川拓耶", "atokaku_punch"], ["2026-08-16", "大谷勇斗", "atokaku_punch"], ["2026-08-16", "我妻拓馬", "atokaku_punch"], ["2026-08-16", "角谷成映", "atokaku_punch"], ["2026-08-16", "長谷川拓耶", "atokaku_punch"], ["2026-08-19", "落水田匡平", "atokaku_punch"]]; // [日付, 氏名, 種別]（訪問・アポ後確依頼の打刻の元データ）
+const REPORT_RECORDS = [["2026-08-12", "橋口航大", "seiyaku"], ["2026-08-13", "栗山裕仁", "seiyaku"], ["2026-08-13", "栗山裕仁", "seiyaku"], ["2026-08-14", "中島将暢", "seiyaku"], ["2026-08-14", "栗山裕仁", "seiyaku"], ["2026-08-14", "栗山裕仁", "seiyaku"], ["2026-08-16", "栗山裕仁", "seiyaku"], ["2026-08-18", "栗山裕仁", "seiyaku"], ["2026-08-18", "栗山裕仁", "seiyaku"]]; // [日付, 氏名, 種別]（アポ獲得報告・成約・敗戦・提案中の元データ）
+const HISTORY_RECORDS = [["2026-08-12", "橋口航大", "houmon_kekka"], ["2026-08-12", "橋口航大", "houmon_kekka"], ["2026-08-13", "栗山裕仁", "houmon_kekka"], ["2026-08-13", "栗山裕仁", "houmon_kekka"], ["2026-08-14", "栗山裕仁", "houmon_kekka"], ["2026-08-14", "栗山裕仁", "houmon_kekka"], ["2026-08-14", "中島将暢", "houmon_kekka"], ["2026-08-15", "角谷成映", "atokaku_punch"], ["2026-08-15", "栗山裕仁", "atokaku_punch"], ["2026-08-15", "栗山裕仁", "atokaku_punch"], ["2026-08-15", "長谷川拓耶", "atokaku_punch"], ["2026-08-15", "橋口航大", "atokaku_punch"], ["2026-08-15", "曽我部千稜", "atokaku_punch"], ["2026-08-16", "大谷勇斗", "atokaku_punch"], ["2026-08-16", "我妻拓馬", "atokaku_punch"], ["2026-08-16", "角谷成映", "atokaku_punch"], ["2026-08-16", "長谷川拓耶", "atokaku_punch"], ["2026-08-16", "栗山裕仁", "houmon_kekka"], ["2026-08-16", "橋口航大", "atokaku_punch"], ["2026-08-18", "栗山裕仁", "houmon_kekka"], ["2026-08-18", "栗山裕仁", "houmon_kekka"], ["2026-08-19", "落水田匡平", "atokaku_punch"]]; // [日付, 氏名, 種別]（訪問・アポ後確依頼の打刻の元データ）
 const SPOT_DETAIL = [["2026-08-15", "長谷川拓耶", "FF-SH-FS-20260815-560", "AP獲得(お客様名記載)", "鹿児島県霧島市国分新町1362-1", 31.7617801144488, 130.7808804658678], ["2026-08-15", "我妻拓馬", "FF-SH-FS-20260815-350", "対面お断り(理由記載)", "愛知県西尾市一色町味浜上乾地4-4", 34.81951856282004, 137.0255916621895], ["2026-08-15", "我妻拓馬", "FF-SH-FS-20260815-347", "対面お断り(理由記載)", "愛知県西尾市一色町味浜上乾地4-4", 34.8193453236222, 137.025985422065], ["2026-08-15", "角谷成映", "釘田様", "AP獲得(お客様名記載)", "鹿児島県霧島市隼人町住吉71", 31.7209098392671, 130.7445031918786], ["2026-08-16", "角谷成映", "永山様", "AP獲得(お客様名記載)", "鹿児島県霧島市国分清水1丁目4-9-5", 31.75117084228465, 130.7717191807485], ["2026-08-16", "大谷勇斗", "山本様 Qセルズ", "AP獲得(お客様名記載)", "愛知県岡崎市中島東町3丁目1-20", 34.89077286625, 137.12497824973], ["2026-08-16", "我妻拓馬", "FF-SH-FS-20260816-258", "AP獲得(お客様名記載)", "愛知県岡崎市中島東町3丁目8-2", 34.89144074487543, 137.1250778334719], ["2026-08-16", "長谷川拓耶", "FF-SH-FS-20260816-43", "AP獲得(お客様名記載)", "鹿児島県姶良市加治木町反土2895-3", 31.74409012476451, 130.6556662145969]]; // [日付, 氏名, スポット名, タグ, 住所]（対面数の内訳明細）
-const HISTORY_DETAIL = [["2026-08-15", "角谷成映", "atokaku_punch", "14:27", "鹿児島県霧島市隼人町住吉"], ["2026-08-15", "栗山裕仁", "atokaku_punch", "11:27", "鹿児島県鹿児島市下福元町"], ["2026-08-15", "栗山裕仁", "atokaku_punch", "10:18", "鹿児島県鹿児島市坂之上七丁目"], ["2026-08-15", "長谷川拓耶", "atokaku_punch", "19:03", "鹿児島県霧島市国分新町"], ["2026-08-16", "大谷勇斗", "atokaku_punch", "17:13", "愛知県岡崎市中島東町三丁目"], ["2026-08-16", "我妻拓馬", "atokaku_punch", "16:34", "愛知県岡崎市中島東町三丁目"], ["2026-08-16", "角谷成映", "atokaku_punch", "18:47", "鹿児島県霧島市国分新町"], ["2026-08-16", "長谷川拓耶", "atokaku_punch", "09:39", "鹿児島県姶良市加治木町反土"], ["2026-08-19", "落水田匡平", "atokaku_punch", "14:15", "鹿児島県鹿児島市若葉町"]]; // [日付, 氏名, 種別, 時刻, 住所]（訪問数の内訳明細）
-const SCHEDULE_RECORDS = [["2026-08-13", "栗山裕仁", "kakutei"], ["2026-08-14", "栗山裕仁", "kakutei"], ["2026-08-14", "栗山裕仁", "kakutei"], ["2026-08-16", "栗山裕仁", "kakutei"], ["2026-08-18", "長谷川拓耶", "kakutei"], ["2026-08-18", "栗山裕仁", "kakutei"], ["2026-08-19", "栗山裕仁", "kari"]]; // [日付, 氏名(アポインター), カテゴリ種別]（商談予定の元データ）
-const SCHEDULE_DETAIL = [["2026-08-13", "栗山裕仁", "栗山　鹿児島市", "確定", "鹿児島県霧島市国分湊876-8"], ["2026-08-14", "栗山裕仁", "栗山　霧島市", "確定", "鹿児島県霧島市国分下井1722-2"], ["2026-08-14", "栗山裕仁", "栗山　霧島市　新堀様", "確定", "鹿児島県霧島市隼人町住吉564-5"], ["2026-08-16", "栗山裕仁", "栗山　霧島市　堀之内様", "確定", "鹿児島県霧島市国分重久567-1"], ["2026-08-18", "長谷川拓耶", "大迫様", "確定", "鹿児島県霧島市国分新町1362-1"], ["2026-08-18", "栗山裕仁", "栗山　霧島市", "確定", "鹿児島県霧島市国分広瀬3丁目7-9"], ["2026-08-19", "栗山裕仁", "FF-SH-FS-20260815-31", "仮予定", "鹿児島県鹿児島市坂之上7丁目40-35"]]; // [日付, 氏名, タイトル, カテゴリ, 住所]（商談予定の内訳明細）
+const HISTORY_DETAIL = [["2026-08-12", "橋口航大", "houmon_kekka", "17:45", "熊本県熊本市南区城南町鰐瀬"], ["2026-08-12", "橋口航大", "houmon_kekka", "17:43", "熊本県宇城市"], ["2026-08-13", "栗山裕仁", "houmon_kekka", "15:55", "鹿児島県霧島市隼人町住吉"], ["2026-08-13", "栗山裕仁", "houmon_kekka", "11:44", "鹿児島県霧島市隼人町真孝"], ["2026-08-14", "栗山裕仁", "houmon_kekka", "14:43", "鹿児島県霧島市国分中央三丁目"], ["2026-08-14", "栗山裕仁", "houmon_kekka", "12:58", "鹿児島県霧島市隼人町内山田一丁目"], ["2026-08-14", "中島将暢", "houmon_kekka", "15:00", "愛知県額田郡幸田町大字六栗字本郷"], ["2026-08-15", "角谷成映", "atokaku_punch", "14:27", "鹿児島県霧島市隼人町住吉"], ["2026-08-15", "栗山裕仁", "atokaku_punch", "11:27", "鹿児島県鹿児島市下福元町"], ["2026-08-15", "栗山裕仁", "atokaku_punch", "10:18", "鹿児島県鹿児島市坂之上七丁目"], ["2026-08-15", "長谷川拓耶", "atokaku_punch", "19:03", "鹿児島県霧島市国分新町"], ["2026-08-15", "橋口航大", "atokaku_punch", "17:29", "鹿児島県霧島市国分福島三丁目"], ["2026-08-15", "曽我部千稜", "atokaku_punch", "15:25", "鹿児島県霧島市国分重久"], ["2026-08-16", "大谷勇斗", "atokaku_punch", "17:13", "愛知県岡崎市中島東町三丁目"], ["2026-08-16", "我妻拓馬", "atokaku_punch", "16:34", "愛知県岡崎市中島東町三丁目"], ["2026-08-16", "角谷成映", "atokaku_punch", "18:47", "鹿児島県霧島市国分新町"], ["2026-08-16", "長谷川拓耶", "atokaku_punch", "09:39", "鹿児島県姶良市加治木町反土"], ["2026-08-16", "栗山裕仁", "houmon_kekka", "16:55", "鹿児島県霧島市国分中央一丁目"], ["2026-08-16", "橋口航大", "atokaku_punch", "18:28", "鹿児島県霧島市国分広瀬二丁目"], ["2026-08-18", "栗山裕仁", "houmon_kekka", "19:49", "鹿児島県霧島市隼人町小浜"], ["2026-08-18", "栗山裕仁", "houmon_kekka", "12:44", "鹿児島県霧島市国分野口北"], ["2026-08-19", "落水田匡平", "atokaku_punch", "14:15", "鹿児島県鹿児島市若葉町"]]; // [日付, 氏名, 種別, 時刻, 住所]（訪問数の内訳明細）
+const SCHEDULE_RECORDS = [["2026-08-13", "橋口航大", "kakutei"], ["2026-08-14", "橋口航大", "kakutei"], ["2026-08-14", "栗山裕仁", "kakutei"], ["2026-08-16", "栗山裕仁", "kakutei"], ["2026-08-18", "長谷川拓耶", "kakutei"], ["2026-08-18", "橋口航大", "kakutei"], ["2026-08-19", "栗山裕仁", "kari"]]; // [日付, 氏名(アポインター), カテゴリ種別]（商談予定の元データ）
+const SCHEDULE_DETAIL = [["2026-08-13", "橋口航大", "栗山　鹿児島市", "確定", "鹿児島県霧島市国分湊876-8"], ["2026-08-14", "橋口航大", "栗山　霧島市", "確定", "鹿児島県霧島市国分下井1722-2"], ["2026-08-14", "栗山裕仁", "栗山　霧島市　新堀様", "確定", "鹿児島県霧島市隼人町住吉564-5"], ["2026-08-16", "栗山裕仁", "栗山　霧島市　堀之内様", "確定", "鹿児島県霧島市国分重久567-1"], ["2026-08-18", "長谷川拓耶", "大迫様", "確定", "鹿児島県霧島市国分新町1362-1"], ["2026-08-18", "橋口航大", "栗山　霧島市", "確定", "鹿児島県霧島市国分広瀬3丁目7-9"], ["2026-08-19", "栗山裕仁", "FF-SH-FS-20260815-31", "仮予定", "鹿児島県鹿児島市坂之上7丁目40-35"]]; // [日付, 氏名, タイトル, カテゴリ, 住所]（商談予定の内訳明細）
 const QUALITATIVE_RECORDS = []; // [日付, 氏名, 項目名, 回答]（アポ獲得報告の定性項目）
 const ALL_PERIOD_LABEL = "2026-08-12 〜 2026-08-20（全期間・新運用ルール開始日〜本日）";
 const START_DATE_JS = "2026-08-12";
 const TODAY_JS = "2026-08-20";
 const TARGETS = {"長谷川拓耶": {"visit": 0, "contacted": 0, "ap": 0, "shodan_yotei": 0, "contract": 0}, "中島将暢": {"visit": 0, "contacted": 0, "ap": 0, "shodan_yotei": 0, "contract": 0}, "栗山裕仁": {"visit": 0, "contacted": 0, "ap": 0, "shodan_yotei": 0, "contract": 0}, "角谷成映": {"visit": 0, "contacted": 0, "ap": 0, "shodan_yotei": 0, "contract": 0}, "我妻拓馬": {"visit": 0, "contacted": 0, "ap": 0, "shodan_yotei": 0, "contract": 0}, "大谷勇斗": {"visit": 0, "contacted": 0, "ap": 0, "shodan_yotei": 0, "contract": 0}, "倉住昇吾": {"visit": 0, "contacted": 0, "ap": 0, "shodan_yotei": 0, "contract": 0}, "落水田匡平": {"visit": 0, "contacted": 0, "ap": 0, "shodan_yotei": 0, "contract": 0}, "後藤陽太": {"visit": 0, "contacted": 0, "ap": 0, "shodan_yotei": 0, "contract": 0}, "鎮守灯": {"visit": 0, "contacted": 0, "ap": 0, "shodan_yotei": 0, "contract": 0}, "津崎涼": {"visit": 0, "contacted": 0, "ap": 0, "shodan_yotei": 0, "contract": 0}}; // {氏名: {visit,contacted,ap,shodan_yotei,contract}}（月次目標。0=未設定）
-const TIME_STATS = {"hours": [{"h": 0, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"h": 1, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"h": 2, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"h": 3, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"h": 4, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"h": 5, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"h": 6, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"h": 7, "visit": 1, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"h": 8, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"h": 9, "visit": 86, "contacted": 16, "ap": 1, "ap_rate": 6.2}, {"h": 10, "visit": 351, "contacted": 45, "ap": 8, "ap_rate": 17.8}, {"h": 11, "visit": 156, "contacted": 19, "ap": 6, "ap_rate": 31.6}, {"h": 12, "visit": 261, "contacted": 50, "ap": 9, "ap_rate": 18.0}, {"h": 13, "visit": 394, "contacted": 76, "ap": 13, "ap_rate": 17.1}, {"h": 14, "visit": 392, "contacted": 78, "ap": 11, "ap_rate": 14.1}, {"h": 15, "visit": 212, "contacted": 44, "ap": 6, "ap_rate": 13.6}, {"h": 16, "visit": 254, "contacted": 52, "ap": 21, "ap_rate": 40.4}, {"h": 17, "visit": 176, "contacted": 48, "ap": 18, "ap_rate": 37.5}, {"h": 18, "visit": 116, "contacted": 42, "ap": 25, "ap_rate": 59.5}, {"h": 19, "visit": 22, "contacted": 18, "ap": 18, "ap_rate": 100.0}, {"h": 20, "visit": 1, "contacted": 1, "ap": 1, "ap_rate": 100.0}, {"h": 21, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"h": 22, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"h": 23, "visit": 4, "contacted": 4, "ap": 4, "ap_rate": 100.0}], "dows": [{"d": "月", "visit": 59, "contacted": 25, "ap": 13, "ap_rate": 52.0}, {"d": "火", "visit": 2, "contacted": 1, "ap": 1, "ap_rate": 100.0}, {"d": "水", "visit": 401, "contacted": 58, "ap": 12, "ap_rate": 20.7}, {"d": "木", "visit": 608, "contacted": 101, "ap": 24, "ap_rate": 23.8}, {"d": "金", "visit": 462, "contacted": 91, "ap": 18, "ap_rate": 19.8}, {"d": "土", "visit": 399, "contacted": 105, "ap": 37, "ap_rate": 35.2}, {"d": "日", "visit": 495, "contacted": 112, "ap": 36, "ap_rate": 32.1}], "heat": [{"d": "月", "h": 0, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "月", "h": 1, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "月", "h": 2, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "月", "h": 3, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "月", "h": 4, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "月", "h": 5, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "月", "h": 6, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "月", "h": 7, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "月", "h": 8, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "月", "h": 9, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "月", "h": 10, "visit": 6, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "月", "h": 11, "visit": 3, "contacted": 1, "ap": 0, "ap_rate": 0.0}, {"d": "月", "h": 12, "visit": 23, "contacted": 9, "ap": 1, "ap_rate": 11.1}, {"d": "月", "h": 13, "visit": 8, "contacted": 6, "ap": 3, "ap_rate": 50.0}, {"d": "月", "h": 14, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "月", "h": 15, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "月", "h": 16, "visit": 1, "contacted": 1, "ap": 1, "ap_rate": 100.0}, {"d": "月", "h": 17, "visit": 4, "contacted": 1, "ap": 1, "ap_rate": 100.0}, {"d": "月", "h": 18, "visit": 13, "contacted": 6, "ap": 6, "ap_rate": 100.0}, {"d": "月", "h": 19, "visit": 1, "contacted": 1, "ap": 1, "ap_rate": 100.0}, {"d": "月", "h": 20, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "月", "h": 21, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "月", "h": 22, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "月", "h": 23, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "火", "h": 0, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "火", "h": 1, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "火", "h": 2, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "火", "h": 3, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "火", "h": 4, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "火", "h": 5, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "火", "h": 6, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "火", "h": 7, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "火", "h": 8, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "火", "h": 9, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "火", "h": 10, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "火", "h": 11, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "火", "h": 12, "visit": 1, "contacted": 1, "ap": 1, "ap_rate": 100.0}, {"d": "火", "h": 13, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "火", "h": 14, "visit": 1, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "火", "h": 15, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "火", "h": 16, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "火", "h": 17, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "火", "h": 18, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "火", "h": 19, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "火", "h": 20, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "火", "h": 21, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "火", "h": 22, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "火", "h": 23, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "水", "h": 0, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "水", "h": 1, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "水", "h": 2, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "水", "h": 3, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "水", "h": 4, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "水", "h": 5, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "水", "h": 6, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "水", "h": 7, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "水", "h": 8, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "水", "h": 9, "visit": 7, "contacted": 1, "ap": 0, "ap_rate": 0.0}, {"d": "水", "h": 10, "visit": 21, "contacted": 1, "ap": 0, "ap_rate": 0.0}, {"d": "水", "h": 11, "visit": 29, "contacted": 4, "ap": 0, "ap_rate": 0.0}, {"d": "水", "h": 12, "visit": 20, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "水", "h": 13, "visit": 112, "contacted": 22, "ap": 1, "ap_rate": 4.5}, {"d": "水", "h": 14, "visit": 75, "contacted": 6, "ap": 0, "ap_rate": 0.0}, {"d": "水", "h": 15, "visit": 28, "contacted": 4, "ap": 0, "ap_rate": 0.0}, {"d": "水", "h": 16, "visit": 79, "contacted": 9, "ap": 1, "ap_rate": 11.1}, {"d": "水", "h": 17, "visit": 14, "contacted": 4, "ap": 3, "ap_rate": 75.0}, {"d": "水", "h": 18, "visit": 14, "contacted": 5, "ap": 5, "ap_rate": 100.0}, {"d": "水", "h": 19, "visit": 2, "contacted": 2, "ap": 2, "ap_rate": 100.0}, {"d": "水", "h": 20, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "水", "h": 21, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "水", "h": 22, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "水", "h": 23, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "木", "h": 0, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "木", "h": 1, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "木", "h": 2, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "木", "h": 3, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "木", "h": 4, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "木", "h": 5, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "木", "h": 6, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "木", "h": 7, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "木", "h": 8, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "木", "h": 9, "visit": 7, "contacted": 3, "ap": 0, "ap_rate": 0.0}, {"d": "木", "h": 10, "visit": 78, "contacted": 10, "ap": 0, "ap_rate": 0.0}, {"d": "木", "h": 11, "visit": 71, "contacted": 1, "ap": 0, "ap_rate": 0.0}, {"d": "木", "h": 12, "visit": 122, "contacted": 13, "ap": 1, "ap_rate": 7.7}, {"d": "木", "h": 13, "visit": 129, "contacted": 15, "ap": 1, "ap_rate": 6.7}, {"d": "木", "h": 14, "visit": 46, "contacted": 16, "ap": 5, "ap_rate": 31.2}, {"d": "木", "h": 15, "visit": 53, "contacted": 14, "ap": 3, "ap_rate": 21.4}, {"d": "木", "h": 16, "visit": 39, "contacted": 6, "ap": 1, "ap_rate": 16.7}, {"d": "木", "h": 17, "visit": 50, "contacted": 14, "ap": 4, "ap_rate": 28.6}, {"d": "木", "h": 18, "visit": 5, "contacted": 2, "ap": 2, "ap_rate": 100.0}, {"d": "木", "h": 19, "visit": 8, "contacted": 7, "ap": 7, "ap_rate": 100.0}, {"d": "木", "h": 20, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "木", "h": 21, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "木", "h": 22, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "木", "h": 23, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "金", "h": 0, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "金", "h": 1, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "金", "h": 2, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "金", "h": 3, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "金", "h": 4, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "金", "h": 5, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "金", "h": 6, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "金", "h": 7, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "金", "h": 8, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "金", "h": 9, "visit": 15, "contacted": 3, "ap": 0, "ap_rate": 0.0}, {"d": "金", "h": 10, "visit": 19, "contacted": 3, "ap": 0, "ap_rate": 0.0}, {"d": "金", "h": 11, "visit": 27, "contacted": 2, "ap": 0, "ap_rate": 0.0}, {"d": "金", "h": 12, "visit": 27, "contacted": 2, "ap": 1, "ap_rate": 50.0}, {"d": "金", "h": 13, "visit": 78, "contacted": 18, "ap": 3, "ap_rate": 16.7}, {"d": "金", "h": 14, "visit": 149, "contacted": 27, "ap": 2, "ap_rate": 7.4}, {"d": "金", "h": 15, "visit": 53, "contacted": 14, "ap": 0, "ap_rate": 0.0}, {"d": "金", "h": 16, "visit": 19, "contacted": 5, "ap": 2, "ap_rate": 40.0}, {"d": "金", "h": 17, "visit": 45, "contacted": 5, "ap": 3, "ap_rate": 60.0}, {"d": "金", "h": 18, "visit": 23, "contacted": 7, "ap": 2, "ap_rate": 28.6}, {"d": "金", "h": 19, "visit": 6, "contacted": 4, "ap": 4, "ap_rate": 100.0}, {"d": "金", "h": 20, "visit": 1, "contacted": 1, "ap": 1, "ap_rate": 100.0}, {"d": "金", "h": 21, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "金", "h": 22, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "金", "h": 23, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "土", "h": 0, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "土", "h": 1, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "土", "h": 2, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "土", "h": 3, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "土", "h": 4, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "土", "h": 5, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "土", "h": 6, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "土", "h": 7, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "土", "h": 8, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "土", "h": 9, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "土", "h": 10, "visit": 110, "contacted": 18, "ap": 4, "ap_rate": 22.2}, {"d": "土", "h": 11, "visit": 7, "contacted": 2, "ap": 1, "ap_rate": 50.0}, {"d": "土", "h": 12, "visit": 23, "contacted": 9, "ap": 2, "ap_rate": 22.2}, {"d": "土", "h": 13, "visit": 28, "contacted": 10, "ap": 4, "ap_rate": 40.0}, {"d": "土", "h": 14, "visit": 23, "contacted": 8, "ap": 2, "ap_rate": 25.0}, {"d": "土", "h": 15, "visit": 72, "contacted": 9, "ap": 1, "ap_rate": 11.1}, {"d": "土", "h": 16, "visit": 78, "contacted": 18, "ap": 9, "ap_rate": 50.0}, {"d": "土", "h": 17, "visit": 21, "contacted": 11, "ap": 3, "ap_rate": 27.3}, {"d": "土", "h": 18, "visit": 29, "contacted": 13, "ap": 4, "ap_rate": 30.8}, {"d": "土", "h": 19, "visit": 4, "contacted": 3, "ap": 3, "ap_rate": 100.0}, {"d": "土", "h": 20, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "土", "h": 21, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "土", "h": 22, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "土", "h": 23, "visit": 4, "contacted": 4, "ap": 4, "ap_rate": 100.0}, {"d": "日", "h": 0, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "日", "h": 1, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "日", "h": 2, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "日", "h": 3, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "日", "h": 4, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "日", "h": 5, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "日", "h": 6, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "日", "h": 7, "visit": 1, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "日", "h": 8, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "日", "h": 9, "visit": 57, "contacted": 9, "ap": 1, "ap_rate": 11.1}, {"d": "日", "h": 10, "visit": 117, "contacted": 13, "ap": 4, "ap_rate": 30.8}, {"d": "日", "h": 11, "visit": 19, "contacted": 9, "ap": 5, "ap_rate": 55.6}, {"d": "日", "h": 12, "visit": 45, "contacted": 16, "ap": 3, "ap_rate": 18.8}, {"d": "日", "h": 13, "visit": 39, "contacted": 5, "ap": 1, "ap_rate": 20.0}, {"d": "日", "h": 14, "visit": 98, "contacted": 21, "ap": 2, "ap_rate": 9.5}, {"d": "日", "h": 15, "visit": 6, "contacted": 3, "ap": 2, "ap_rate": 66.7}, {"d": "日", "h": 16, "visit": 38, "contacted": 13, "ap": 7, "ap_rate": 53.8}, {"d": "日", "h": 17, "visit": 42, "contacted": 13, "ap": 4, "ap_rate": 30.8}, {"d": "日", "h": 18, "visit": 32, "contacted": 9, "ap": 6, "ap_rate": 66.7}, {"d": "日", "h": 19, "visit": 1, "contacted": 1, "ap": 1, "ap_rate": 100.0}, {"d": "日", "h": 20, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "日", "h": 21, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "日", "h": 22, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "日", "h": 23, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}], "range": ["2026-02-28", "2026-08-16"]}; // {hours:[{h,visit,contacted,ap,ap_rate}...24], dows:[...7], heat:[{d,h,...}...168], range:[開始日,終了日]}
+const TIME_STATS = {"hours": [{"h": 0, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"h": 1, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"h": 2, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"h": 3, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"h": 4, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"h": 5, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"h": 6, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"h": 7, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"h": 8, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"h": 9, "visit": 0, "contacted": 1, "ap": 1, "ap_rate": 100.0}, {"h": 10, "visit": 0, "contacted": 0, "ap": 1, "ap_rate": 0.0}, {"h": 11, "visit": 0, "contacted": 0, "ap": 1, "ap_rate": 0.0}, {"h": 12, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"h": 13, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"h": 14, "visit": 0, "contacted": 3, "ap": 2, "ap_rate": 66.7}, {"h": 15, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"h": 16, "visit": 0, "contacted": 1, "ap": 1, "ap_rate": 100.0}, {"h": 17, "visit": 0, "contacted": 1, "ap": 1, "ap_rate": 100.0}, {"h": 18, "visit": 0, "contacted": 1, "ap": 1, "ap_rate": 100.0}, {"h": 19, "visit": 0, "contacted": 1, "ap": 1, "ap_rate": 100.0}, {"h": 20, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"h": 21, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"h": 22, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"h": 23, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}], "dows": [{"d": "月", "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "火", "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "水", "visit": 0, "contacted": 0, "ap": 1, "ap_rate": 0.0}, {"d": "木", "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "金", "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "土", "visit": 0, "contacted": 4, "ap": 4, "ap_rate": 100.0}, {"d": "日", "visit": 0, "contacted": 4, "ap": 4, "ap_rate": 100.0}], "heat": [{"d": "月", "h": 0, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "月", "h": 1, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "月", "h": 2, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "月", "h": 3, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "月", "h": 4, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "月", "h": 5, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "月", "h": 6, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "月", "h": 7, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "月", "h": 8, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "月", "h": 9, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "月", "h": 10, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "月", "h": 11, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "月", "h": 12, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "月", "h": 13, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "月", "h": 14, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "月", "h": 15, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "月", "h": 16, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "月", "h": 17, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "月", "h": 18, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "月", "h": 19, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "月", "h": 20, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "月", "h": 21, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "月", "h": 22, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "月", "h": 23, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "火", "h": 0, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "火", "h": 1, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "火", "h": 2, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "火", "h": 3, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "火", "h": 4, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "火", "h": 5, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "火", "h": 6, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "火", "h": 7, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "火", "h": 8, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "火", "h": 9, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "火", "h": 10, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "火", "h": 11, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "火", "h": 12, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "火", "h": 13, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "火", "h": 14, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "火", "h": 15, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "火", "h": 16, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "火", "h": 17, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "火", "h": 18, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "火", "h": 19, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "火", "h": 20, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "火", "h": 21, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "火", "h": 22, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "火", "h": 23, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "水", "h": 0, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "水", "h": 1, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "水", "h": 2, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "水", "h": 3, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "水", "h": 4, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "水", "h": 5, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "水", "h": 6, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "水", "h": 7, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "水", "h": 8, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "水", "h": 9, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "水", "h": 10, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "水", "h": 11, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "水", "h": 12, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "水", "h": 13, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "水", "h": 14, "visit": 0, "contacted": 0, "ap": 1, "ap_rate": 0.0}, {"d": "水", "h": 15, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "水", "h": 16, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "水", "h": 17, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "水", "h": 18, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "水", "h": 19, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "水", "h": 20, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "水", "h": 21, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "水", "h": 22, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "水", "h": 23, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "木", "h": 0, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "木", "h": 1, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "木", "h": 2, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "木", "h": 3, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "木", "h": 4, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "木", "h": 5, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "木", "h": 6, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "木", "h": 7, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "木", "h": 8, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "木", "h": 9, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "木", "h": 10, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "木", "h": 11, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "木", "h": 12, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "木", "h": 13, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "木", "h": 14, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "木", "h": 15, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "木", "h": 16, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "木", "h": 17, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "木", "h": 18, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "木", "h": 19, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "木", "h": 20, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "木", "h": 21, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "木", "h": 22, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "木", "h": 23, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "金", "h": 0, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "金", "h": 1, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "金", "h": 2, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "金", "h": 3, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "金", "h": 4, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "金", "h": 5, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "金", "h": 6, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "金", "h": 7, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "金", "h": 8, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "金", "h": 9, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "金", "h": 10, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "金", "h": 11, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "金", "h": 12, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "金", "h": 13, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "金", "h": 14, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "金", "h": 15, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "金", "h": 16, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "金", "h": 17, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "金", "h": 18, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "金", "h": 19, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "金", "h": 20, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "金", "h": 21, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "金", "h": 22, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "金", "h": 23, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "土", "h": 0, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "土", "h": 1, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "土", "h": 2, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "土", "h": 3, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "土", "h": 4, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "土", "h": 5, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "土", "h": 6, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "土", "h": 7, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "土", "h": 8, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "土", "h": 9, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "土", "h": 10, "visit": 0, "contacted": 0, "ap": 1, "ap_rate": 0.0}, {"d": "土", "h": 11, "visit": 0, "contacted": 0, "ap": 1, "ap_rate": 0.0}, {"d": "土", "h": 12, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "土", "h": 13, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "土", "h": 14, "visit": 0, "contacted": 3, "ap": 1, "ap_rate": 33.3}, {"d": "土", "h": 15, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "土", "h": 16, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "土", "h": 17, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "土", "h": 18, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "土", "h": 19, "visit": 0, "contacted": 1, "ap": 1, "ap_rate": 100.0}, {"d": "土", "h": 20, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "土", "h": 21, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "土", "h": 22, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "土", "h": 23, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "日", "h": 0, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "日", "h": 1, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "日", "h": 2, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "日", "h": 3, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "日", "h": 4, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "日", "h": 5, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "日", "h": 6, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "日", "h": 7, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "日", "h": 8, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "日", "h": 9, "visit": 0, "contacted": 1, "ap": 1, "ap_rate": 100.0}, {"d": "日", "h": 10, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "日", "h": 11, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "日", "h": 12, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "日", "h": 13, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "日", "h": 14, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "日", "h": 15, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "日", "h": 16, "visit": 0, "contacted": 1, "ap": 1, "ap_rate": 100.0}, {"d": "日", "h": 17, "visit": 0, "contacted": 1, "ap": 1, "ap_rate": 100.0}, {"d": "日", "h": 18, "visit": 0, "contacted": 1, "ap": 1, "ap_rate": 100.0}, {"d": "日", "h": 19, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "日", "h": 20, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "日", "h": 21, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "日", "h": 22, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "日", "h": 23, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}], "range": ["2026-08-15", "2026-08-19"], "total_visit": 0, "ready": false}; // {hours:[{h,visit,contacted,ap,ap_rate}...24], dows:[...7], heat:[{d,h,...}...168], range:[開始日,終了日]}
 const CONTACTED_BUCKETS = new Set(['taimen_ng','ap_maybe','ap']);
+const REFERENCE_ONLY_NAMES = new Set(["曽我部千稜", "橋口航大"]); // 参考掲載メンバー（合算KPI・ファネル・現場インサイトには含めない）
 
 function fmtN(n){ return n.toLocaleString('ja-JP'); }
 function round1(x){ return Math.round(x*10)/10; }
@@ -308,12 +303,14 @@ function deriveFromCounts(sc, rc, hc, ssc){
   const visit = hc.visit_punch||0;
   let contacted=0; CONTACTED_BUCKETS.forEach(function(b){ if(sc[b]) contacted+=sc[b]; });
   const ap=hc.atokaku_punch||0, contract=rc.seiyaku||0, lost=rc.haisen||0, proposal=rc.teianchu||0; // アポ獲得数は一旦「アポ後確依頼」打刻数のみ
+  const shodan_jisshi = hc.shodan_jisshi||0; // 「新規商談」打刻数
   const shodan_yotei = Object.values(ssc).reduce(function(a,b){return a+b;},0);
-  return {visit:visit, contacted:contacted, ap:ap, contract:contract, lost:lost, proposal:proposal, shodan_yotei:shodan_yotei,
+  return {visit:visit, contacted:contacted, ap:ap, shodan_jisshi:shodan_jisshi, contract:contract, lost:lost, proposal:proposal, shodan_yotei:shodan_yotei,
     taimen_rate: pctOrNull(contacted, visit),
     ap_rate_taimen: pctOrNull(ap, contacted),
     ap_rate_visit: pctOrNull(ap, visit),
-    yotei_rate_ap: pctOrNull(shodan_yotei, ap)};
+    yotei_rate_ap: pctOrNull(shodan_yotei, ap),
+    jisshi_rate: pctOrNull(shodan_jisshi, shodan_yotei)};
 }
 
 function aggregateRecords(spotRecords, reportRecords, historyRecords, scheduleRecords){
@@ -356,27 +353,33 @@ function renderPeriod(spotRecords, reportRecords, historyRecords, scheduleRecord
   currentHistoryDetail = historyDetail;
   currentScheduleDetail = scheduleDetail;
   const members = aggregateRecords(spotRecords, reportRecords, historyRecords, scheduleRecords).sort(function(a,b){ return b.visit-a.visit; });
-  const visit = members.reduce(function(s,m){return s+m.visit;},0);
-  const contacted = members.reduce(function(s,m){return s+m.contacted;},0);
-  const ap = members.reduce(function(s,m){return s+m.ap;},0);
-  const contract = members.reduce(function(s,m){return s+m.contract;},0);
-  const lost = members.reduce(function(s,m){return s+m.lost;},0);
-  const proposal = members.reduce(function(s,m){return s+m.proposal;},0);
-  const shodanYotei = members.reduce(function(s,m){return s+m.shodan_yotei;},0);
+  // 上部の合算KPI・ファネル・個人目標は参考掲載メンバー（橋口さん・曽我部さん）を除く
+  const coreMembers = members.filter(function(m){ return !REFERENCE_ONLY_NAMES.has(m.name); });
+  const visit = coreMembers.reduce(function(s,m){return s+m.visit;},0);
+  const contacted = coreMembers.reduce(function(s,m){return s+m.contacted;},0);
+  const ap = coreMembers.reduce(function(s,m){return s+m.ap;},0);
+  const shodanJisshi = coreMembers.reduce(function(s,m){return s+m.shodan_jisshi;},0);
+  const contract = coreMembers.reduce(function(s,m){return s+m.contract;},0);
+  const lost = coreMembers.reduce(function(s,m){return s+m.lost;},0);
+  const proposal = coreMembers.reduce(function(s,m){return s+m.proposal;},0);
+  const shodanYotei = coreMembers.reduce(function(s,m){return s+m.shodan_yotei;},0);
   const taimenRate = pctOrNull(contacted, visit);
   const apRateT = pctOrNull(ap, contacted);
   const apRateV = pctOrNull(ap, visit);
   const yoteiRateAp = pctOrNull(shodanYotei, ap);
+  const jisshiRate = pctOrNull(shodanJisshi, shodanYotei);
 
   document.getElementById('periodLabel').textContent = label;
   document.getElementById('tileVisit').textContent = fmtN(visit);
-  document.getElementById('tileVisitSub').textContent = members.length+'名の合算';
+  document.getElementById('tileVisitSub').textContent = coreMembers.length+'名の合算';
   document.getElementById('tileContacted').textContent = fmtN(contacted);
   document.getElementById('tileContactedSub').textContent = '対面率 '+fmtPct(taimenRate);
   document.getElementById('tileAp').textContent = fmtN(ap);
   document.getElementById('tileApSub').textContent = 'アポ率 '+fmtPct(apRateT);
   document.getElementById('tileYotei').textContent = fmtN(shodanYotei);
   document.getElementById('tileYoteiSub').textContent = '商談化率 '+fmtPct(yoteiRateAp);
+  document.getElementById('tileJisshi').textContent = fmtN(shodanJisshi);
+  document.getElementById('tileJisshiSub').textContent = '実施率 '+fmtPct(jisshiRate);
   document.getElementById('tileContract').textContent = fmtN(contract);
   document.getElementById('tileLost').textContent = fmtN(lost);
   document.getElementById('tileLostSub').textContent = '提案中 '+proposal+'件';
@@ -385,16 +388,17 @@ function renderPeriod(spotRecords, reportRecords, historyRecords, scheduleRecord
   document.getElementById('fbContacted').textContent = fmtN(contacted);
   document.getElementById('fbAp').textContent = fmtN(ap);
   document.getElementById('fbYotei').textContent = fmtN(shodanYotei);
+  document.getElementById('fbJisshi').textContent = fmtN(shodanJisshi);
   document.getElementById('fbContract').textContent = fmtN(contract);
   document.getElementById('funnelNote').textContent =
-    '対面率（対面/訪問）＝'+fmtPct(taimenRate)+'　／　アポ率（アポ/対面）＝'+fmtPct(apRateT)+'　／　アポ率（アポ/訪問）＝'+fmtPct(apRateV)+'　／　商談化率（商談予定/アポ）＝'+fmtPct(yoteiRateAp);
+    '対面率（対面/訪問）＝'+fmtPct(taimenRate)+'　／　アポ率（アポ/対面）＝'+fmtPct(apRateT)+'　／　アポ率（アポ/訪問）＝'+fmtPct(apRateV)+'　／　商談化率（商談予定/アポ）＝'+fmtPct(yoteiRateAp)+'　／　実施率（商談実施/商談予定）＝'+fmtPct(jisshiRate);
 
   currentMembers = members;
   currentPeriodLabel = label;
   renderMemberTable(members);
   renderMap(spotDetail);
   renderQualitative(qualRecords);
-  renderTargets(members);
+  renderTargets(coreMembers);
 }
 
 // ---------- 個人目標の達成状況（月次目標を表示期間の日数で按分） ----------
@@ -534,15 +538,20 @@ const MEMBER_COLS = [
   {label:'訪問', key:'visit', num:true},
   {label:'対面', key:'contacted', num:true},
   {label:'アポ獲得', key:'ap', num:true},
+  {label:'商談実施', key:'shodan_jisshi', num:true},
   {label:'対面率', key:'taimen_rate', num:true},
   {label:'アポ率', key:'ap_rate_taimen', num:true},
 ];
 let memberSortCol = 1;
 let memberSortDir = -1;
+let lastRenderedMembers = [];
 
 function renderMemberTable(members){
+  lastRenderedMembers = members;
   const table = document.getElementById('memberTable');
-  const sorted = members.slice().sort(function(a,b){
+  const q = (document.getElementById('memberSearch').value||'').trim().toLowerCase();
+  const filtered = q ? members.filter(function(m){ return m.name.toLowerCase().indexOf(q)>=0; }) : members;
+  const sorted = filtered.slice().sort(function(a,b){
     const key = MEMBER_COLS[memberSortCol].key;
     let av=a[key], bv=b[key];
     if(av===null) av=-1; if(bv===null) bv=-1;
@@ -554,14 +563,16 @@ function renderMemberTable(members){
       ' <span class="arrow">'+(i===memberSortCol?(memberSortDir>0?'▲':'▼'):'▲▼')+'</span></th>';
   }).join('') + '</tr></thead>';
   const tbody = sorted.length ? ('<tbody>' + sorted.map(function(m){
+    const refBadge = REFERENCE_ONLY_NAMES.has(m.name) ? '<span style="font-size:10px;font-weight:700;color:var(--text-xs);background:var(--slate);border-radius:4px;padding:1px 6px;margin-left:6px;">参考</span>' : '';
     return '<tr class="clickable-row" data-name="'+escapeHtml(m.name)+'">'+
-      '<td><div class="rep-cell"><div class="avatar">'+m.name[0]+'</div><span class="clickable-name">'+escapeHtml(m.name)+'</span></div></td>'+
+      '<td><div class="rep-cell"><div class="avatar">'+m.name[0]+'</div><span class="clickable-name">'+escapeHtml(m.name)+'</span>'+refBadge+'</div></td>'+
       '<td class="tr">'+fmtN(m.visit)+'</td>'+
       '<td class="tr">'+fmtN(m.contacted)+'</td>'+
       '<td class="tr fw">'+fmtN(m.ap)+'</td>'+
+      '<td class="tr">'+fmtN(m.shodan_jisshi||0)+'</td>'+
       '<td class="tr chipcell"><span class="chip '+rateClass(m.taimen_rate,30,15)+'">'+fmtPct(m.taimen_rate)+'</span></td>'+
       '<td class="tr chipcell"><span class="chip '+rateClass(m.ap_rate_taimen,10,3)+'">'+fmtPct(m.ap_rate_taimen)+'</span></td></tr>';
-  }).join('') + '</tbody>') : '<tbody><tr><td colspan="6" class="empty-row">この期間の実績データがありません</td></tr></tbody>';
+  }).join('') + '</tbody>') : '<tbody><tr><td colspan="'+MEMBER_COLS.length+'" class="empty-row">'+(q?'「'+escapeHtml(q)+'」に一致するメンバーがいません':'この期間の実績データがありません')+'</td></tr></tbody>';
   table.innerHTML = thead + tbody;
 
   table.querySelectorAll('thead th').forEach(function(th){
@@ -575,6 +586,7 @@ function renderMemberTable(members){
     tr.addEventListener('click', function(){ openPersonDetail(tr.dataset.name); });
   });
 }
+document.getElementById('memberSearch').addEventListener('input', function(){ renderMemberTable(lastRenderedMembers); });
 
 function buildTable(cols, rows, emptyMsg){
   const thead = '<thead><tr>' + cols.map(function(c,i){ return '<th class="'+(i===0?'':'tr')+'">'+c+'</th>'; }).join('') + '</tr></thead>';
@@ -621,7 +633,7 @@ function openPersonDetail(name){
     (dates[0]||'—')+' 〜 '+(dates[dates.length-1]||'—')+' 日別実績（全期間・累計: 訪問'+totalVisit+'件・アポ獲得'+totalAp+'件・成約'+totalContract+'件）';
 
   const dailyRows = daily.slice().reverse().map(function(d){
-    return [d.date, fmtN(d.visit), fmtN(d.contacted), fmtN(d.ap), fmtN(d.shodan_yotei), fmtN(d.contract)];
+    return [d.date, fmtN(d.visit), fmtN(d.contacted), fmtN(d.ap), fmtN(d.shodan_yotei), fmtN(d.shodan_jisshi), fmtN(d.contract)];
   });
   const spotRows = SPOT_DETAIL.filter(function(r){return r[1]===name;}).slice().reverse().map(function(r){
     return [r[0], escapeHtml(r[2]), escapeHtml(r[3]), escapeHtml(r[4])];
@@ -632,25 +644,30 @@ function openPersonDetail(name){
   const atokakuRows = HISTORY_DETAIL.filter(function(r){return r[1]===name && r[2]==='atokaku_punch';}).slice().reverse().map(function(r){
     return [r[0], r[3]||'—', escapeHtml(r[4])];
   });
+  const jisshiRows = HISTORY_DETAIL.filter(function(r){return r[1]===name && r[2]==='shodan_jisshi';}).slice().reverse().map(function(r){
+    return [r[0], r[3]||'—', escapeHtml(r[4])];
+  });
   const scheduleRows = SCHEDULE_DETAIL.filter(function(r){return r[1]===name;}).slice().reverse().map(function(r){
     return [r[0], escapeHtml(r[2]), escapeHtml(r[3]), escapeHtml(r[4])];
   });
 
   document.getElementById('drillBody').innerHTML =
-    sectionTitle('日別実績') + buildTable(['日付','訪問','対面','アポ獲得','商談予定','成約'], dailyRows, 'データがありません') +
+    sectionTitle('日別実績') + buildTable(['日付','訪問','対面','アポ獲得','商談予定','商談実施','成約'], dailyRows, 'データがありません') +
     sectionTitle('対面したスポット一覧（'+spotRows.length+'件・対面数の内訳）') +
     buildTable(['日付','スポット名','タグ','住所'], spotRows, '対面したスポットがありません') +
     sectionTitle('「訪問（アポインター）」打刻一覧（'+histRows.length+'件・訪問数の内訳）') +
     buildTable(['日付','時刻','打刻時の住所'], histRows, '打刻がありません') +
     sectionTitle('「アポ後確依頼」打刻一覧（'+atokakuRows.length+'件・アポ獲得数の内訳）') +
     buildTable(['日付','時刻','打刻時の住所'], atokakuRows, '打刻がありません') +
+    sectionTitle('「新規商談」打刻一覧（'+jisshiRows.length+'件・商談実施数の内訳）') +
+    buildTable(['日付','時刻','打刻時の住所'], jisshiRows, '打刻がありません') +
     sectionTitle('商談予定一覧（'+scheduleRows.length+'件・商談予定数の内訳）') +
     buildTable(['日付','タイトル','カテゴリ','住所'], scheduleRows, '商談予定がありません');
   document.getElementById('drillModal').classList.add('show');
 }
 
 // ---------- KPIタイルクリック → 内訳モーダル（現在の表示期間） ----------
-const TILE_LABELS = {visit:'訪問数', contacted:'対面数', ap:'アポ獲得数', shodan_yotei:'商談予定数', contract:'成約数', lost:'敗戦数'};
+const TILE_LABELS = {visit:'訪問数', contacted:'対面数', ap:'アポ獲得数', shodan_yotei:'商談予定数', shodan_jisshi:'商談実施数', contract:'成約数', lost:'敗戦数'};
 function openTileDrill(kind){
   const label = TILE_LABELS[kind] || kind;
   document.getElementById('drillTitle').textContent = label+'の内訳';
@@ -676,6 +693,13 @@ function openTileDrill(kind){
     });
     document.getElementById('drillBody').innerHTML =
       sectionTitle('「アポ後確依頼」打刻一覧（'+rows.length+'件）') +
+      buildTable(['日付','メンバー','時刻'], rows, '該当データなし');
+  } else if(kind === 'shodan_jisshi'){
+    const rows = currentHistoryDetail.filter(function(r){return r[2]==='shodan_jisshi';}).slice().reverse().map(function(r){
+      return [r[0], escapeHtml(r[1]), r[3]||'—'];
+    });
+    document.getElementById('drillBody').innerHTML =
+      sectionTitle('「新規商談」打刻一覧（'+rows.length+'件）') +
       buildTable(['日付','メンバー','時刻'], rows, '該当データなし');
   } else if(kind === 'shodan_yotei'){
     const rows = currentScheduleDetail.slice().reverse().map(function(r){
@@ -730,6 +754,12 @@ function buildPickers(){
   document.getElementById('monthPicker').innerHTML = uniqueMonths.slice().reverse().map(function(m){
     const parts = m.split('-'); return '<option value="'+m+'">'+parts[0]+'年'+parseInt(parts[1],10)+'月</option>';
   }).join('');
+  const customFromEl = document.getElementById('customFrom'), customToEl = document.getElementById('customTo');
+  const defaultFrom = allDates.length ? allDates[Math.max(0, allDates.length-7)] : START_DATE_JS;
+  customFromEl.min = customToEl.min = START_DATE_JS;
+  customFromEl.max = customToEl.max = TODAY_JS;
+  if(!customFromEl.value) customFromEl.value = defaultFrom;
+  if(!customToEl.value) customToEl.value = TODAY_JS;
 }
 
 let currentPeriod = 'all';
@@ -748,6 +778,11 @@ function applyPeriod(){
   } else if(currentPeriod === 'month'){
     const v = document.getElementById('monthPicker').value;
     pred = function(d){return d.slice(0,7)===v;}; label = v+'（月次）';
+  } else if(currentPeriod === 'custom'){
+    let from = document.getElementById('customFrom').value, to = document.getElementById('customTo').value;
+    if(from && to && from > to){ const tmp=from; from=to; to=tmp; }
+    if(!from || !to){ pred = function(d){return true;}; label = ALL_PERIOD_LABEL; }
+    else { pred = function(d){return d>=from && d<=to;}; label = from+' 〜 '+to+'（カスタム）'; }
   }
   renderPeriod(
     SPOT_RECORDS.filter(function(r){return pred(r[0]);}),
@@ -763,6 +798,14 @@ function applyPeriod(){
 }
 
 function renderTimeAnalysis(){
+  if(!TIME_STATS.ready){
+    const msg = '<div class="empty-row">⏳ データ集積中：訪問打刻 '+fmtN(TIME_STATS.total_visit||0)+' / '+fmtN(30)+'件（目安）に達すると自動的に表示されます</div>';
+    document.getElementById('timeStats').innerHTML = msg;
+    document.getElementById('hourChart').innerHTML = '';
+    document.getElementById('dowChart').innerHTML = '';
+    document.getElementById('heatmap').innerHTML = msg;
+    return;
+  }
   const hours = TIME_STATS.hours || [], dows = TIME_STATS.dows || [], heat = TIME_STATS.heat || [];
   if(!hours.length){ return; }
   const bestHour = hours.slice().filter(function(x){return x.contacted>=5;}).sort(function(a,b){return b.ap_rate-a.ap_rate;})[0] || hours[0];
@@ -831,12 +874,15 @@ document.querySelectorAll('.period-btn').forEach(function(btn){
     document.getElementById('dayPicker').style.display = currentPeriod==='day' ? '' : 'none';
     document.getElementById('weekPicker').style.display = currentPeriod==='week' ? '' : 'none';
     document.getElementById('monthPicker').style.display = currentPeriod==='month' ? '' : 'none';
+    document.getElementById('customPicker').style.display = currentPeriod==='custom' ? 'inline-flex' : 'none';
     applyPeriod();
   });
 });
 document.getElementById('dayPicker').addEventListener('change', applyPeriod);
 document.getElementById('weekPicker').addEventListener('change', applyPeriod);
 document.getElementById('monthPicker').addEventListener('change', applyPeriod);
+document.getElementById('customFrom').addEventListener('change', applyPeriod);
+document.getElementById('customTo').addEventListener('change', applyPeriod);
 
 buildPickers();
 applyPeriod();
