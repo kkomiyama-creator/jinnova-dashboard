@@ -155,7 +155,7 @@
 <div class="wrap">
   <div class="header">
     <h1>JINNOVA様 専用ダッシュボード</h1>
-    <div class="sub">対象期間：<span id="periodLabel">2026-08-12 〜 2026-08-20（全期間・新運用ルール開始日〜本日）</span> ／ 更新：2026-08-20 09:28</div>
+    <div class="sub">対象期間：<span id="periodLabel">2026-08-12 〜 2026-08-20（全期間・新運用ルール開始日〜本日）</span> ／ 更新：2026-08-20 09:35</div>
   </div>
 
   <div class="periodbar">
@@ -175,6 +175,12 @@
       <span style="color:var(--text-sub);font-size:12px;">〜</span>
       <input type="date" class="day-picker" id="customTo">
     </span>
+  </div>
+
+  <div class="periodbar">
+    <span class="label">表示対象</span>
+    <select class="day-picker" id="personFilter" style="min-width:160px;"></select>
+    <span class="note" id="personFilterNote" style="margin:0;"></span>
   </div>
 
   <div class="warnbox">
@@ -211,10 +217,16 @@
       <input type="text" id="memberSearch" placeholder="🔍 メンバー名で検索・絞り込み" style="width:100%;max-width:280px;font-family:inherit;font-size:13px;padding:9px 12px;border:1px solid var(--border);border-radius:8px;background:#fff;color:var(--text);">
     </div>
     <table id="memberTable"></table>
-    <div class="note">※ 実績データなし（現在Cyzen上に活動記録が見当たりません）：津崎涼・倉住昇吾・後藤陽太・鎮守灯</div>
+    <div class="note">※ 実績データなし（現在Cyzen上に活動記録が見当たりません）：後藤陽太・鎮守灯・倉住昇吾・津崎涼</div>
     <div class="note"></div>
     <div class="note">※ 商談予定1件は参加者からアポインターを一意に判定できなかったため、メンバー別の集計から除外しています（合計の商談予定数にも含まれません）。</div>
     <div class="note">※ 橋口航大・曽我部千稜は参考のためこの表にのみ掲載しています（Cyzen上の会社名タグはJINNOVA様ではなく、橋口航大＝株式会社Fit Founder、曽我部千稜＝株式会社Next Place）。上部の合算KPIタイル・訪問ファネル・現場インサイト・時間帯×曜日分析には含まれません。</div>
+  </div>
+
+  <div class="card">
+    <h2>メンバー比較<span style="font-weight:400;color:var(--text-xs);font-size:11px;"> — 2名以上を選ぶと実績を並べて比較できます（できている人・できていない人の比較などに）</span></h2>
+    <div id="compareChecks" style="display:flex;flex-wrap:wrap;gap:6px 14px;margin-bottom:12px;"></div>
+    <div id="compareView"></div>
   </div>
 
   <div class="card">
@@ -235,11 +247,12 @@
           件数が貯まり次第、次回のダッシュボード更新（15分おき）で自動的に表示されます。</div></div>
         <div class="ins-note">※以前は参考としてスポット全履歴を代用表示していましたが、新ルールと定義を揃えるため打刻ベースに統一しました。</div>
       </div></div>
-    <div class="note">この現場インサイトと下の「時間帯×曜日分析」は、新運用ルールの入力コンプライアンス集計（上のKPIタイル群）とは異なり、<b>2026-02〜の全スポット履歴</b>を対象にしています（傾向を見るには件数が必要なため）。</div>
+    <div class="note">この現場インサイトは全員（JINNOVA様所属＋大谷勇斗）の合算データを対象にしています。個人ごとの傾向は下の「時間帯×曜日分析」を「表示対象」で切り替えてご確認ください。</div>
   </div>
 
   <div class="card">
     <h2>時間帯 × 曜日 分析<span style="font-weight:400;color:var(--text-xs);font-size:11px;"> — データ集積中（訪問打刻 0/30件・目安に到達次第表示）</span></h2>
+    <div class="note" id="timeAnalysisScope" style="margin:0 0 10px;"></div>
     <div class="area-summary" id="timeStats"></div>
     <div class="grid-2">
       <div style="border:1px solid var(--border);border-radius:10px;padding:14px;">
@@ -320,6 +333,9 @@ const TARGETS = {"長谷川拓耶": {"visit": 0, "contacted": 0, "ap": 0, "shoda
 const TIME_STATS = {"hours": [{"h": 0, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"h": 1, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"h": 2, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"h": 3, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"h": 4, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"h": 5, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"h": 6, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"h": 7, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"h": 8, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"h": 9, "visit": 0, "contacted": 1, "ap": 1, "ap_rate": 100.0}, {"h": 10, "visit": 0, "contacted": 0, "ap": 1, "ap_rate": 0.0}, {"h": 11, "visit": 0, "contacted": 0, "ap": 1, "ap_rate": 0.0}, {"h": 12, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"h": 13, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"h": 14, "visit": 0, "contacted": 3, "ap": 2, "ap_rate": 66.7}, {"h": 15, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"h": 16, "visit": 0, "contacted": 1, "ap": 1, "ap_rate": 100.0}, {"h": 17, "visit": 0, "contacted": 1, "ap": 1, "ap_rate": 100.0}, {"h": 18, "visit": 0, "contacted": 1, "ap": 1, "ap_rate": 100.0}, {"h": 19, "visit": 0, "contacted": 1, "ap": 1, "ap_rate": 100.0}, {"h": 20, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"h": 21, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"h": 22, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"h": 23, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}], "dows": [{"d": "月", "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "火", "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "水", "visit": 0, "contacted": 0, "ap": 1, "ap_rate": 0.0}, {"d": "木", "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "金", "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "土", "visit": 0, "contacted": 4, "ap": 4, "ap_rate": 100.0}, {"d": "日", "visit": 0, "contacted": 4, "ap": 4, "ap_rate": 100.0}], "heat": [{"d": "月", "h": 0, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "月", "h": 1, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "月", "h": 2, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "月", "h": 3, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "月", "h": 4, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "月", "h": 5, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "月", "h": 6, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "月", "h": 7, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "月", "h": 8, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "月", "h": 9, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "月", "h": 10, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "月", "h": 11, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "月", "h": 12, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "月", "h": 13, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "月", "h": 14, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "月", "h": 15, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "月", "h": 16, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "月", "h": 17, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "月", "h": 18, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "月", "h": 19, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "月", "h": 20, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "月", "h": 21, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "月", "h": 22, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "月", "h": 23, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "火", "h": 0, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "火", "h": 1, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "火", "h": 2, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "火", "h": 3, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "火", "h": 4, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "火", "h": 5, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "火", "h": 6, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "火", "h": 7, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "火", "h": 8, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "火", "h": 9, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "火", "h": 10, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "火", "h": 11, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "火", "h": 12, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "火", "h": 13, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "火", "h": 14, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "火", "h": 15, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "火", "h": 16, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "火", "h": 17, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "火", "h": 18, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "火", "h": 19, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "火", "h": 20, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "火", "h": 21, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "火", "h": 22, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "火", "h": 23, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "水", "h": 0, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "水", "h": 1, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "水", "h": 2, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "水", "h": 3, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "水", "h": 4, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "水", "h": 5, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "水", "h": 6, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "水", "h": 7, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "水", "h": 8, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "水", "h": 9, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "水", "h": 10, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "水", "h": 11, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "水", "h": 12, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "水", "h": 13, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "水", "h": 14, "visit": 0, "contacted": 0, "ap": 1, "ap_rate": 0.0}, {"d": "水", "h": 15, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "水", "h": 16, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "水", "h": 17, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "水", "h": 18, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "水", "h": 19, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "水", "h": 20, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "水", "h": 21, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "水", "h": 22, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "水", "h": 23, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "木", "h": 0, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "木", "h": 1, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "木", "h": 2, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "木", "h": 3, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "木", "h": 4, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "木", "h": 5, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "木", "h": 6, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "木", "h": 7, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "木", "h": 8, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "木", "h": 9, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "木", "h": 10, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "木", "h": 11, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "木", "h": 12, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "木", "h": 13, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "木", "h": 14, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "木", "h": 15, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "木", "h": 16, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "木", "h": 17, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "木", "h": 18, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "木", "h": 19, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "木", "h": 20, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "木", "h": 21, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "木", "h": 22, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "木", "h": 23, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "金", "h": 0, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "金", "h": 1, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "金", "h": 2, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "金", "h": 3, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "金", "h": 4, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "金", "h": 5, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "金", "h": 6, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "金", "h": 7, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "金", "h": 8, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "金", "h": 9, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "金", "h": 10, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "金", "h": 11, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "金", "h": 12, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "金", "h": 13, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "金", "h": 14, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "金", "h": 15, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "金", "h": 16, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "金", "h": 17, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "金", "h": 18, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "金", "h": 19, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "金", "h": 20, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "金", "h": 21, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "金", "h": 22, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "金", "h": 23, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "土", "h": 0, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "土", "h": 1, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "土", "h": 2, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "土", "h": 3, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "土", "h": 4, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "土", "h": 5, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "土", "h": 6, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "土", "h": 7, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "土", "h": 8, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "土", "h": 9, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "土", "h": 10, "visit": 0, "contacted": 0, "ap": 1, "ap_rate": 0.0}, {"d": "土", "h": 11, "visit": 0, "contacted": 0, "ap": 1, "ap_rate": 0.0}, {"d": "土", "h": 12, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "土", "h": 13, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "土", "h": 14, "visit": 0, "contacted": 3, "ap": 1, "ap_rate": 33.3}, {"d": "土", "h": 15, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "土", "h": 16, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "土", "h": 17, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "土", "h": 18, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "土", "h": 19, "visit": 0, "contacted": 1, "ap": 1, "ap_rate": 100.0}, {"d": "土", "h": 20, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "土", "h": 21, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "土", "h": 22, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "土", "h": 23, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "日", "h": 0, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "日", "h": 1, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "日", "h": 2, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "日", "h": 3, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "日", "h": 4, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "日", "h": 5, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "日", "h": 6, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "日", "h": 7, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "日", "h": 8, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "日", "h": 9, "visit": 0, "contacted": 1, "ap": 1, "ap_rate": 100.0}, {"d": "日", "h": 10, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "日", "h": 11, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "日", "h": 12, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "日", "h": 13, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "日", "h": 14, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "日", "h": 15, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "日", "h": 16, "visit": 0, "contacted": 1, "ap": 1, "ap_rate": 100.0}, {"d": "日", "h": 17, "visit": 0, "contacted": 1, "ap": 1, "ap_rate": 100.0}, {"d": "日", "h": 18, "visit": 0, "contacted": 1, "ap": 1, "ap_rate": 100.0}, {"d": "日", "h": 19, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "日", "h": 20, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "日", "h": 21, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "日", "h": 22, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}, {"d": "日", "h": 23, "visit": 0, "contacted": 0, "ap": 0, "ap_rate": 0.0}], "range": ["2026-08-15", "2026-08-19"], "total_visit": 0, "ready": false}; // {hours:[{h,visit,contacted,ap,ap_rate}...24], dows:[...7], heat:[{d,h,...}...168], range:[開始日,終了日]}
 const CONTACTED_BUCKETS = new Set(['taimen_ng','ap_maybe','ap']);
 const REFERENCE_ONLY_NAMES = new Set(["曽我部千稜", "橋口航大"]); // 参考掲載メンバー（合算KPI・ファネル・現場インサイトには含めない）
+const TIME_RECORDS = [["2026-08-15", "長谷川拓耶", 19, 5, "contacted"], ["2026-08-15", "我妻拓馬", 14, 5, "contacted"], ["2026-08-15", "我妻拓馬", 14, 5, "contacted"], ["2026-08-15", "角谷成映", 14, 5, "contacted"], ["2026-08-15", "角谷成映", 14, 5, "ap"], ["2026-08-15", "栗山裕仁", 11, 5, "ap"], ["2026-08-15", "栗山裕仁", 10, 5, "ap"], ["2026-08-15", "長谷川拓耶", 19, 5, "ap"], ["2026-08-15", "橋口航大", 17, 5, "ap"], ["2026-08-15", "曽我部千稜", 15, 5, "ap"], ["2026-08-16", "角谷成映", 18, 6, "contacted"], ["2026-08-16", "大谷勇斗", 17, 6, "contacted"], ["2026-08-16", "我妻拓馬", 16, 6, "contacted"], ["2026-08-16", "長谷川拓耶", 9, 6, "contacted"], ["2026-08-16", "大谷勇斗", 17, 6, "ap"], ["2026-08-16", "我妻拓馬", 16, 6, "ap"], ["2026-08-16", "角谷成映", 18, 6, "ap"], ["2026-08-16", "長谷川拓耶", 9, 6, "ap"], ["2026-08-16", "橋口航大", 18, 6, "ap"], ["2026-08-19", "落水田匡平", 14, 2, "ap"]]; // [日付, 氏名, 時, 曜日index(0=月), 種別(visit/ap/contacted)]（時間帯×曜日分析をメンバー個別に切替えるための生イベント）
+const ALL_MEMBER_NAMES = ["中島将暢", "大谷勇斗", "我妻拓馬", "曽我部千稜", "栗山裕仁", "橋口航大", "落水田匡平", "角谷成映", "長谷川拓耶"].slice().sort(function(a,b){return a.localeCompare(b,'ja');});
+const MIN_VISIT_FOR_TIME_ANALYSIS = 30;
 
 function fmtN(n){ return n.toLocaleString('ja-JP'); }
 function round1(x){ return Math.round(x*10)/10; }
@@ -384,16 +400,19 @@ function renderPeriod(spotRecords, reportRecords, historyRecords, scheduleRecord
   currentHistoryDetail = historyDetail;
   currentScheduleDetail = scheduleDetail;
   const members = aggregateRecords(spotRecords, reportRecords, historyRecords, scheduleRecords).sort(function(a,b){ return b.visit-a.visit; });
-  // 上部の合算KPI・ファネル・個人目標は参考掲載メンバー（橋口さん・曽我部さん）を除く
-  const coreMembers = members.filter(function(m){ return !REFERENCE_ONLY_NAMES.has(m.name); });
-  const visit = coreMembers.reduce(function(s,m){return s+m.visit;},0);
-  const contacted = coreMembers.reduce(function(s,m){return s+m.contacted;},0);
-  const ap = coreMembers.reduce(function(s,m){return s+m.ap;},0);
-  const shodanJisshi = coreMembers.reduce(function(s,m){return s+m.shodan_jisshi;},0);
-  const contract = coreMembers.reduce(function(s,m){return s+m.contract;},0);
-  const lost = coreMembers.reduce(function(s,m){return s+m.lost;},0);
-  const proposal = coreMembers.reduce(function(s,m){return s+m.proposal;},0);
-  const shodanYotei = coreMembers.reduce(function(s,m){return s+m.shodan_yotei;},0);
+  // 表示対象（「表示対象」セレクタ）: 全員なら参考掲載メンバー（橋口さん・曽我部さん）を除いた合算、
+  // 特定の1名ならその人の実績のみ。上部KPI・ファネル・個人目標・マップ・時間帯×曜日分析すべてに適用。
+  const scopeMembers = currentPerson === 'all'
+    ? members.filter(function(m){ return !REFERENCE_ONLY_NAMES.has(m.name); })
+    : members.filter(function(m){ return m.name === currentPerson; });
+  const visit = scopeMembers.reduce(function(s,m){return s+m.visit;},0);
+  const contacted = scopeMembers.reduce(function(s,m){return s+m.contacted;},0);
+  const ap = scopeMembers.reduce(function(s,m){return s+m.ap;},0);
+  const shodanJisshi = scopeMembers.reduce(function(s,m){return s+m.shodan_jisshi;},0);
+  const contract = scopeMembers.reduce(function(s,m){return s+m.contract;},0);
+  const lost = scopeMembers.reduce(function(s,m){return s+m.lost;},0);
+  const proposal = scopeMembers.reduce(function(s,m){return s+m.proposal;},0);
+  const shodanYotei = scopeMembers.reduce(function(s,m){return s+m.shodan_yotei;},0);
   const taimenRate = pctOrNull(contacted, visit);
   const apRateT = pctOrNull(ap, contacted);
   const apRateV = pctOrNull(ap, visit);
@@ -402,7 +421,7 @@ function renderPeriod(spotRecords, reportRecords, historyRecords, scheduleRecord
 
   document.getElementById('periodLabel').textContent = label;
   document.getElementById('tileVisit').textContent = fmtN(visit);
-  document.getElementById('tileVisitSub').textContent = coreMembers.length+'名の合算';
+  document.getElementById('tileVisitSub').textContent = currentPerson==='all' ? scopeMembers.length+'名の合算' : currentPerson+'の実績';
   document.getElementById('tileContacted').textContent = fmtN(contacted);
   document.getElementById('tileContactedSub').textContent = '対面率 '+fmtPct(taimenRate);
   document.getElementById('tileAp').textContent = fmtN(ap);
@@ -423,13 +442,18 @@ function renderPeriod(spotRecords, reportRecords, historyRecords, scheduleRecord
   document.getElementById('fbContract').textContent = fmtN(contract);
   document.getElementById('funnelNote').textContent =
     '対面率（対面/訪問）＝'+fmtPct(taimenRate)+'　／　アポ率（アポ/対面）＝'+fmtPct(apRateT)+'　／　アポ率（アポ/訪問）＝'+fmtPct(apRateV)+'　／　商談化率（商談予定/アポ）＝'+fmtPct(yoteiRateAp)+'　／　実施率（商談実施/商談予定）＝'+fmtPct(jisshiRate);
+  document.getElementById('personFilterNote').textContent = currentPerson==='all' ? '' :
+    ('「'+currentPerson+'」個人の実績を表示中です。'+(REFERENCE_ONLY_NAMES.has(currentPerson)?'（参考掲載メンバー）':''));
 
   currentMembers = members;
   currentPeriodLabel = label;
   renderMemberTable(members);
-  renderMap(spotDetail);
+  const scopedSpotDetail = currentPerson==='all' ? spotDetail : spotDetail.filter(function(r){return r[1]===currentPerson;});
+  renderMap(scopedSpotDetail);
   renderQualitative(qualRecords);
-  renderTargets(coreMembers);
+  renderTargets(scopeMembers);
+  renderTimeAnalysis(currentPerson);
+  renderComparison();
 }
 
 // ---------- 個人目標の達成状況（月次目標を表示期間の日数で按分） ----------
@@ -545,12 +569,12 @@ function applyQualFilter(){
 function renderQualitative(qualRecords){
   currentQualRecords = qualRecords;
   const sel = document.getElementById('qualMemberFilter');
-  const prevValue = sel.value;
   const names = Array.from(new Set(currentMembers.map(function(m){return m.name;}))).sort(function(a,b){return a.localeCompare(b,'ja');});
   sel.innerHTML = '<option value="">全員</option>' + names.map(function(n){
     return '<option value="'+escapeHtml(n)+'">'+escapeHtml(n)+'</option>';
   }).join('');
-  sel.value = names.includes(prevValue) ? prevValue : '';
+  // 上部の「表示対象」と連動（個別選択時はその人に自動で絞り込む）
+  sel.value = (currentPerson!=='all' && names.includes(currentPerson)) ? currentPerson : '';
   applyQualFilter();
 }
 document.getElementById('qualMemberFilter').addEventListener('change', applyQualFilter);
@@ -799,6 +823,7 @@ function buildPickers(){
 }
 
 let currentPeriod = 'all';
+let currentPerson = 'all';
 
 function applyPeriod(){
   let pred, label;
@@ -833,17 +858,44 @@ function applyPeriod(){
   );
 }
 
-function renderTimeAnalysis(){
-  if(!TIME_STATS.ready){
-    const msg = '<div class="empty-row">⏳ データ集積中：訪問打刻 '+fmtN(TIME_STATS.total_visit||0)+' / '+fmtN(30)+'件（目安）に達すると自動的に表示されます</div>';
+const DOW_JA_ARR = ['月','火','水','木','金','土','日'];
+function computeTimeStatsJS(records){
+  // records: [日付, 氏名, 時, 曜日index(0=月), 種別(visit/ap/contacted)]
+  const hourV={}, hourA={}, hourC={}, dowV={}, dowA={}, dowC={}, heatV={}, heatA={}, heatC={};
+  const dates = [];
+  records.forEach(function(r){
+    const date=r[0], hour=r[2], dow=r[3], kind=r[4], hk=dow+'_'+hour;
+    dates.push(date);
+    if(kind==='visit'){ hourV[hour]=(hourV[hour]||0)+1; dowV[dow]=(dowV[dow]||0)+1; heatV[hk]=(heatV[hk]||0)+1; }
+    else if(kind==='ap'){ hourA[hour]=(hourA[hour]||0)+1; dowA[dow]=(dowA[dow]||0)+1; heatA[hk]=(heatA[hk]||0)+1; }
+    else if(kind==='contacted'){ hourC[hour]=(hourC[hour]||0)+1; dowC[dow]=(dowC[dow]||0)+1; heatC[hk]=(heatC[hk]||0)+1; }
+  });
+  const derive = function(v,c,a){ return {visit:v, contacted:c, ap:a, ap_rate: c?round1(a/c*100):0}; };
+  const hours = []; for(let h=0;h<24;h++){ hours.push(Object.assign({h:h}, derive(hourV[h]||0, hourC[h]||0, hourA[h]||0))); }
+  const dows = []; for(let d=0;d<7;d++){ dows.push(Object.assign({d:DOW_JA_ARR[d]}, derive(dowV[d]||0, dowC[d]||0, dowA[d]||0))); }
+  const heat = []; for(let d=0;d<7;d++){ for(let h=0;h<24;h++){ const k=d+'_'+h; heat.push(Object.assign({d:DOW_JA_ARR[d], h:h}, derive(heatV[k]||0, heatC[k]||0, heatA[k]||0))); } }
+  const totalVisit = hours.reduce(function(s,x){return s+x.visit;},0);
+  const range = dates.length ? [dates.reduce(function(a,b){return a<b?a:b;}), dates.reduce(function(a,b){return a>b?a:b;})] : ['',''];
+  return {hours:hours, dows:dows, heat:heat, total_visit:totalVisit, ready: totalVisit>=MIN_VISIT_FOR_TIME_ANALYSIS, range:range};
+}
+function renderTimeAnalysis(personName){
+  personName = personName || currentPerson;
+  const filtered = TIME_RECORDS.filter(function(r){
+    return personName==='all' ? !REFERENCE_ONLY_NAMES.has(r[1]) : r[1]===personName;
+  });
+  const stats = computeTimeStatsJS(filtered);
+  document.getElementById('timeAnalysisScope').textContent = personName==='all'
+    ? '対象: 全員（JINNOVA様所属＋大谷勇斗の合算）'
+    : '対象: '+personName+'（個人）'+(REFERENCE_ONLY_NAMES.has(personName)?'（参考）':'');
+  if(!stats.ready){
+    const msg = '<div class="empty-row">⏳ データ集積中：訪問打刻 '+fmtN(stats.total_visit)+' / '+fmtN(MIN_VISIT_FOR_TIME_ANALYSIS)+'件（目安）に達すると自動的に表示されます</div>';
     document.getElementById('timeStats').innerHTML = msg;
     document.getElementById('hourChart').innerHTML = '';
     document.getElementById('dowChart').innerHTML = '';
     document.getElementById('heatmap').innerHTML = msg;
     return;
   }
-  const hours = TIME_STATS.hours || [], dows = TIME_STATS.dows || [], heat = TIME_STATS.heat || [];
-  if(!hours.length){ return; }
+  const hours = stats.hours, dows = stats.dows;
   const bestHour = hours.slice().filter(function(x){return x.contacted>=5;}).sort(function(a,b){return b.ap_rate-a.ap_rate;})[0] || hours[0];
   const eve = hours.filter(function(x){return x.h>=16 && x.h<=18;});
   const midday = hours.filter(function(x){return x.h>=9 && x.h<=15;});
@@ -853,18 +905,18 @@ function renderTimeAnalysis(){
   const weekday = dows.filter(function(x){return x.d!=='土'&&x.d!=='日';});
   const weekendRate = sumRate(weekend), weekdayRate = sumRate(weekday);
   const peakVisit = hours.slice().sort(function(a,b){return b.visit-a.visit;})[0];
-  const stats = [
+  const statTiles = [
     {l:'最もアポ率が高い時間帯（対面5件以上）', v: bestHour.h+'時', s: 'アポ率 '+bestHour.ap_rate+'%'},
     {l:'夕方(16-18時) vs 日中(9-15時) アポ率', v: middayRate+'% → '+eveRate+'%', s: eveRate>middayRate ? '夕方の方が高い' : '日中の方が高い'},
     {l:'平日 vs 週末 アポ率', v: weekdayRate+'% → '+weekendRate+'%', s: weekendRate>weekdayRate ? '週末の方が高い' : '平日の方が高い'},
     {l:'ピーク訪問時間帯', v: peakVisit.h+'時', s: '訪問が最も集中'},
   ];
-  document.getElementById('timeStats').innerHTML = stats.map(function(s){
+  document.getElementById('timeStats').innerHTML = statTiles.map(function(s){
     return '<div class="area-stat-card"><div class="area-stat-label">'+s.l+'</div><div class="area-stat-val">'+s.v+'</div><div class="area-stat-sub">'+s.s+'</div></div>';
   }).join('');
   lineChartT('hourChart', hours.map(function(x){return {lbl:x.h+'時', bar:x.visit, line:x.ap_rate};}), 'アポ率');
   lineChartT('dowChart', dows.map(function(x){return {lbl:x.d, bar:x.visit, line:x.ap_rate, hot:(x.d==='土'||x.d==='日')};}), 'アポ率');
-  renderHeatT();
+  renderHeatT(stats.heat);
 }
 function lineChartT(id, data, lineLabel){
   const W=520,H=210,PX=42,PY=26,maxB=Math.max.apply(null,data.map(function(d){return d.bar;}))||1,maxL=Math.max.apply(null,data.map(function(d){return d.line;}))||1;
@@ -884,8 +936,8 @@ function lineChartT(id, data, lineLabel){
   svg+='</svg>';
   document.getElementById(id).innerHTML = svg+'<div class="legend-row"><div class="legend-item"><div class="legend-dot" style="background:#BFD3FB;"></div>訪問数</div><div class="legend-item"><div class="legend-dot" style="background:#DC2626;"></div>'+lineLabel+'</div></div>';
 }
-function renderHeatT(){
-  const H = TIME_STATS.heat || [];
+function renderHeatT(heatData){
+  const H = heatData || [];
   const hours=[...new Set(H.map(function(x){return x.h;}))].sort(function(a,b){return a-b;});
   const dows=['月','火','水','木','金','土','日'];
   const maxv=Math.max.apply(null, H.map(function(x){return x.visit;}))||1;
@@ -900,6 +952,61 @@ function renderHeatT(){
   dows.forEach(function(d){ g+='<div class="heat-axis" style="justify-content:flex-end;padding-right:4px;">'+d+'</div>'+hours.map(function(h){return cellHtml(d,h);}).join(''); });
   g+='</div>';
   document.getElementById('heatmap').innerHTML = g+'<div style="font-size:9px;color:var(--text-xs);margin-top:6px;">数値＝訪問数 ／ 縦=曜日, 横=時間帯</div>';
+}
+
+// ---------- 表示対象（個人切替） ----------
+function buildPersonFilter(){
+  const sel = document.getElementById('personFilter');
+  sel.innerHTML = '<option value="all">全員（合算）</option>' + ALL_MEMBER_NAMES.map(function(n){
+    return '<option value="'+escapeHtml(n)+'">'+escapeHtml(n)+(REFERENCE_ONLY_NAMES.has(n)?'（参考）':'')+'</option>';
+  }).join('');
+}
+document.getElementById('personFilter').addEventListener('change', function(){
+  currentPerson = this.value;
+  applyPeriod();
+});
+
+// ---------- メンバー比較（2名以上チェックで並べて比較） ----------
+function buildCompareChecks(){
+  const el = document.getElementById('compareChecks');
+  el.innerHTML = ALL_MEMBER_NAMES.map(function(n,i){
+    return '<label style="display:flex;align-items:center;gap:5px;font-size:12.5px;cursor:pointer;">'+
+      '<input type="checkbox" class="compare-check" value="'+escapeHtml(n)+'" id="cmp_'+i+'">'+escapeHtml(n)+
+      (REFERENCE_ONLY_NAMES.has(n)?'<span style="color:var(--text-xs);font-size:10.5px;"> (参考)</span>':'')+'</label>';
+  }).join('');
+  el.querySelectorAll('.compare-check').forEach(function(cb){ cb.addEventListener('change', renderComparison); });
+}
+const COMPARE_METRICS = [
+  {key:'visit', label:'訪問数'}, {key:'contacted', label:'対面数'}, {key:'ap', label:'アポ獲得数'},
+  {key:'taimen_rate', label:'対面率', pct:true, good:30, warn:15},
+  {key:'ap_rate_taimen', label:'アポ率', pct:true, good:10, warn:3},
+  {key:'shodan_yotei', label:'商談予定数'}, {key:'shodan_jisshi', label:'商談実施数'},
+  {key:'contract', label:'成約数'},
+  {key:'contract_rate_ap', label:'成約率(アポ→成約)', pct:true, good:20, warn:8},
+];
+function renderComparison(){
+  const el = document.getElementById('compareView');
+  const checked = Array.from(document.querySelectorAll('.compare-check:checked')).map(function(cb){return cb.value;});
+  if(checked.length < 2){
+    el.innerHTML = '<div class="empty-row">比較したいメンバーを2名以上チェックしてください（現在の表示期間「'+currentPeriodLabel+'」の実績で比較します）</div>';
+    return;
+  }
+  const rows = checked.map(function(name){
+    return currentMembers.find(function(x){return x.name===name;}) ||
+      {name:name, visit:0, contacted:0, ap:0, shodan_yotei:0, shodan_jisshi:0, contract:0, taimen_rate:null, ap_rate_taimen:null, contract_rate_ap:null};
+  });
+  const thead = '<thead><tr><th>メンバー</th>' + COMPARE_METRICS.map(function(c){return '<th class="tr">'+c.label+'</th>';}).join('') + '</tr></thead>';
+  const tbody = '<tbody>' + rows.map(function(m){
+    const nameCell = '<td><div class="rep-cell"><div class="avatar">'+m.name[0]+'</div>'+escapeHtml(m.name)+
+      (REFERENCE_ONLY_NAMES.has(m.name)?' <span style="font-size:10px;font-weight:700;color:var(--text-xs);background:var(--slate);border-radius:4px;padding:1px 6px;">参考</span>':'')+'</div></td>';
+    const cells = COMPARE_METRICS.map(function(c){
+      const v = m[c.key];
+      if(c.pct){ return '<td class="tr chipcell"><span class="chip '+rateClass(v,c.good,c.warn)+'">'+fmtPct(v)+'</span></td>'; }
+      return '<td class="tr">'+fmtN(v||0)+'</td>';
+    }).join('');
+    return '<tr>'+nameCell+cells+'</tr>';
+  }).join('') + '</tbody>';
+  el.innerHTML = '<table>'+thead+tbody+'</table>';
 }
 
 document.querySelectorAll('.period-btn').forEach(function(btn){
@@ -921,8 +1028,9 @@ document.getElementById('customFrom').addEventListener('change', applyPeriod);
 document.getElementById('customTo').addEventListener('change', applyPeriod);
 
 buildPickers();
+buildPersonFilter();
+buildCompareChecks();
 applyPeriod();
-renderTimeAnalysis();
 </script>
 </body>
 </html>
